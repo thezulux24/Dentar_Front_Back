@@ -1,0 +1,46 @@
+### Crear un nuevo paciente
+POST {{baseUrl}}/pacientes
+Content-Type: application/json
+
+{
+  "email": "paciente@kaleidolab.com",
+  "clave": "clave123",
+  "nombres": "paciente", 
+  "apellidos": "kaleido",
+  "telefono": "3185047708",
+  "direccion": "Cali, Colombia",
+  "fecha_de_nacimiento": "1991-10-25"
+}
+
+### Obtener perfil del paciente autenticado
+GET {{baseUrl}}/auth/perfil
+Content-Type: application/json
+Authorization: Bearer {{authPacienteToken}}
+
+
+### Obtener perfil del paciente autenticado
+GET {{baseUrl}}/pacientes/perfil
+Content-Type: application/json
+Authorization: Bearer {{authPacienteToken}}
+
+
+### Obtener perfil del paciente con ID
+GET {{baseUrl}}/pacientes/e6f9ddba-9ad5-4a62-a722-a43c903555d8
+Content-Type: application/json
+Authorization: Bearer {{authAuxiliarToken}}
+
+
+### Actualizar perfil del paciente autenticado
+PATCH {{baseUrl}}/pacientes
+Content-Type: application/json
+Authorization: Bearer {{authPacienteToken}}
+
+{
+  "fecha_de_nacimiento": "1996-11-24",
+  "direccion": "Túquerres, Colombia"
+}
+
+### Obtener todos los pacientes
+GET {{baseUrl}}/pacientes?buscar=juan&pagina=1&cantidad_por_pagina=2
+Content-Type: application/json
+Authorization: Bearer {{authOdontologoToken}}

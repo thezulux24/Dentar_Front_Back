@@ -1,0 +1,34 @@
+### Crear un nuevo auxiliar
+POST {{baseUrl}}/auxiliares
+Content-Type: application/json
+Authorization: Bearer {{authAdminToken}}
+
+{
+    "email": "auxiliar@kaleidolab.com",
+    "clave": "1234567890",
+    "nombres": "auxiliar", 
+    "apellidos": "kaleido",
+    "telefono": "3185047708",
+    "direccion": "Cali, Colombia",
+    "fecha_de_nacimiento": "1990-10-25"
+}
+
+
+### Actualizar perfil del auxiliar autenticado
+PATCH {{baseUrl}}/auxiliares
+Content-Type: application/json
+Authorization: Bearer {{authAuxiliarToken}}
+
+{
+    "nombres": "auxiliar 1", 
+    "apellidos": "kaleido",  
+    "telefono": "3185047708", 
+    "direccion": "Cali, Colombia",
+    "fecha_de_nacimiento": "1997-10-25",
+    "direccion": "Avenida Principal #100-23"
+}
+
+
+### Obtener todos los auxiliares (público)
+GET {{baseUrl}}/auxiliares 
+Content-Type: application/json

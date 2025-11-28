@@ -1,0 +1,29 @@
+{
+    "rest-client.environmentVariables": {
+        "$shared": {
+            "version": "v1",
+            "prodToken": "foo",
+            "nonProdToken": "bar"
+        },
+        "local": {
+            "baseUrl": "http://localhost:3000",
+            // "baseUrl": "https://dev.dentar.kaleidolab.co/api/v1",
+            
+            "authPacienteToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub21icmVzIjoicGFjaWVudGUiLCJhcGVsbGlkb3MiOiJrYWxlaWRvIiwiZm90b19kZV9wZXJmaWwiOm51bGwsImNvcnJlbyI6InBhY2llbnRlQGthbGVpZG9sYWIuY29tIiwicm9sIjoiUGFjaWVudGUiLCJyb2xfaWQiOiJmZjUyN2ZhMS1iNTJmLTQ2OWEtOTc3Yy1iYTQyYjgyMDY5NzgiLCJpZCI6IjIzMWFkMmVlLTQ5YjUtNGIzNS05YzE4LTE3ZmFkZWZmYTg3MCIsImlhdCI6MTc1NzUxMTY1MSwiZXhwIjoxNzU3NTk4MDUxfQ.zF10yeTR7QogHg2i3d9u2UAXmAA44syIybn4s7haa70",
+
+            "authOdontologoToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub21icmVzIjoiQW5kcnVwIFN0ZXZlbiIsImFwZWxsaWRvcyI6IlbDqWxleiIsImZvdG9fZGVfcGVyZmlsIjoiL2ltYWdlbmVzL29kb250b2xvZ29zLzVkM2E0YjQ4LWVmZTctNDRiZS04ZTAwLTU0M2QzMmQ4ZDExMi9hdmF0YXJfNWQzYTRiNDgtZWZlNy00NGJlLThlMDAtNTQzZDMyZDhkMTEyLmpwZWciLCJjb3JyZW8iOiJvZG9udG9sb2dvQGthbGVpZG9sYWIuY29tIiwicm9sIjoiT2RvbnTDs2xvZ28iLCJyb2xfaWQiOiJiZTUzMWFjZS1lMzRjLTQ4NjMtYWI1NS1hMDkyMWJlNjAxZmEiLCJpZCI6IjVkM2E0YjQ4LWVmZTctNDRiZS04ZTAwLTU0M2QzMmQ4ZDExMiIsImlhdCI6MTc1NzU1MjM5NCwiZXhwIjoxNzU3NjM4Nzk0fQ.Ue5ilnkSANdRq9LOwKQe30cANaS2cj1U7wk1n_OYeGc",
+
+            "authAuxiliarToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub21icmVzIjoiYXV4aWxpYXIgMSIsImFwZWxsaWRvcyI6ImthbGVpZG8iLCJmb3RvX2RlX3BlcmZpbCI6bnVsbCwiY29ycmVvIjoiYXV4aWxpYXJAa2FsZWlkb2xhYi5jb20iLCJyb2wiOiJBdXhpbGlhciIsInJvbF9pZCI6IjYxY2VkOGE4LTYzMGEtNDA3MS05ZjE4LTBjNmE5NzY2YTIxZCIsImlkIjoiN2VhZGU3NWQtZDAzMS00YzVhLWI3MjMtYmQzMDc3ODY3MGU4IiwiaWF0IjoxNzU3MzkwMjc4LCJleHAiOjE3NTc0NzY2Nzh9.p932H_y3a9V3B_SGvJgOwsdrlfLmE9C8ugLkn_R8RSA",
+
+            "authAdminToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub21icmVzIjoiYWRtaW4iLCJhcGVsbGlkb3MiOiJrYWxlaWRvIiwiZm90b19kZV9wZXJmaWwiOm51bGwsImNvcnJlbyI6ImFkbWluQGthbGVpZG9sYWIuY29tIiwicm9sIjoiQWRtaW5pc3RyYWRvciIsInJvbF9pZCI6ImNlMTAxMWQwLTNlOTYtNDhiYy1hODFlLTUzZWI4ZmY5ZTU5ZiIsImlkIjoiYzQ0ZDIxMTAtM2ZlOS00YTI2LTkzZmMtNjI2Njc1ZjA2YzllIiwiaWF0IjoxNzU3Mjc4NDA3LCJleHAiOjE3NTczNjQ4MDd9.7Engonp92D4sYdkhRpf2uKhFvvBxEQD8lQZK29VNmUQ"
+        },
+        "staging": {
+            "baseUrl": "http://localhost:3001/api",
+            "token": "eyJhbGciOiJIUzI1NiJ9eyJSb2xlIjoiQWRtaW4if"
+        },
+        "production": {
+            "baseUrl": "http://localhost:3002/api",
+            "token": "c3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsI"
+        }
+    }
+}

@@ -1,0 +1,35 @@
+{
+  "patient": {
+    "nombre": "Jeison Garces C",
+    "edad": 27,
+    "ultimaConsulta": "5 días",
+    "etiqueta": "Alergias conocidas"
+  },
+  "items": [
+    {
+      "id": 1,
+      "descripcion": "ACLARAMIENTO DIENTES NO VITALES 2 SESIONES",
+      "cantidadDientes": 1,
+      "valorUnitario": 400000,
+      "descuento": 200000
+    },
+    {
+      "id": 2,
+      "descripcion": "CARILLAS ESTÉTICAS EN RESINA TÉCNICA DIRECTA",
+      "cantidadDientes": 1,
+      "valorUnitario": 350000,
+      "descuento": 350000
+    }
+  ],
+  "total": 500000,
+  "abono": 200000,
+  "saldoPendiente": 350000,
+  "saldoFacturado": 200000,
+  "saldo": 550000,
+  "facturaNumero": "1234567890",
+  "fecha": "15/03/2022",
+  "nit": "900.334.325-7",
+  "telefono": "3103710924",
+  "correo": "osdace82@yahoo.com",
+  "web": "www.Doctororal.com"
+}

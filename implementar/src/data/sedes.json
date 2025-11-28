@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "nombre": "SEDE NORTE",
+    "direccion": "Cra. 10 #15-20",
+    "telefono": "310 123 4567",
+    "horario": "Lun-Vie 8:00-18:00"
+  },
+  {
+    "id": 2,
+    "nombre": "SEDE CENTRO",
+    "direccion": "Calle 50 #25-10",
+    "telefono": "310 987 6543",
+    "horario": "Lun-Vie 8:00-18:00"
+  },
+  {
+    "id": 3,
+    "nombre": "SEDE SUR",
+    "direccion": "Av. 30 #5-15",
+    "telefono": "310 111 2233",
+    "horario": "Lun-Vie 8:00-18:00"
+  }
+]

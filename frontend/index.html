@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <script>
+    (function (m, a, z, e) {
+      var s, t;
+      try {
+        t = m.sessionStorage.getItem('maze-us');
+      } catch (err) { }
+
+      if (!t) {
+        t = new Date().getTime();
+        try {
+          m.sessionStorage.setItem('maze-us', t);
+        } catch (err) { }
+      }
+
+      s = a.createElement('script');
+      s.src = z + '?apiKey=' + e;
+      s.async = true;
+      a.getElementsByTagName('head')[0].appendChild(s);
+      m.mazeUniversalSnippetApiKey = e;
+    })(window, document, 'https://snippet.maze.co/maze-universal-loader.js', 'cb544728-ab2f-4a33-a06d-5d643811dd46');
+  </script>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/dentar.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DentAR</title>
+<!-- <script type="module">
+    import { MindARThree } from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-three.prod.js";
+    import { GLTFLoader } from "https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+
+    window.MindARThree = MindARThree;
+    window.GLTFLoader = GLTFLoader;
+  </script> -->
+<!-- <script  src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-three.prod.js"></script> -->
+ <!-- <script type="module" src="/load-external-modules.js"></script> -->
+  
+</head>
+
+<body>
+  <div id="root"></div>
+  
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

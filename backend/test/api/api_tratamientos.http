@@ -1,0 +1,38 @@
+### Crear un nuevo tratamiento
+POST {{baseUrl}}/tratamientos
+Content-Type: application/json
+Authorization: Bearer {{authAdminToken}}
+
+{
+    "nombre_tratamiento": "Prótesis",
+    "descripcion": "Procedimiento nuevo"
+    // "precio_estimado": 150000,
+    // "duracion": 60,
+    // "ar_model_url": "https://example.com/models/limpieza-dental.glb",
+    // "imagen_url": "https://example.com/images/limpieza-dental.jpg"
+}
+
+### Obtener todos los tratamientos (privado)
+GET {{baseUrl}}/tratamientos
+Content-Type: application/json
+Authorization: Bearer {{authAdminToken}}
+
+### Obtener todos los tratamientos (público)
+GET {{baseUrl}}/tratamientos/publico
+Content-Type: application/json
+
+
+### Actualizar tratamiento
+PATCH {{baseUrl}}/tratamientos/9c378060-b252-41f5-8b63-69e3e6b0bd67
+Content-Type: application/json
+Authorization: Bearer {{authAdminToken}}
+
+{
+    "nombre_tratamiento": "Blanqueamiento dental"
+    //"descripcion": "Procedimiento de limpieza profunda que incluye remoción de placa y sarro"
+}
+
+### Eliminar tratamiento
+DELETE {{baseUrl}}/tratamientos/9c378060-b252-41f5-8b63-69e3e6b0bd67
+Content-Type: application/json
+Authorization: Bearer {{authAdminToken}}

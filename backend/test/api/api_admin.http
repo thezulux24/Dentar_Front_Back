@@ -1,0 +1,24 @@
+### Crear un nuevo usuario administrador
+POST {{baseUrl}}/administradores
+Content-Type: application/json
+Authorization: Bearer {{authAdminToken}}
+
+{
+    "email": "admin@kaleidolab.com",
+    "clave": "c3n7CV3BeO4HAOU"
+}
+
+
+### Actualizar perfil del administrador autenticado
+PATCH {{baseUrl}}/administradores
+Content-Type: application/json
+Authorization: Bearer {{authAdminToken}}
+
+{
+    "nombres": "admin", 
+    "apellidos": "kaleido",  
+    "telefono": "3185047708", 
+    "direccion": "Cali, Colombia",
+    "fecha_de_nacimiento": "1990-10-25",
+    "direccion": "Avenida Principal #100-23"
+}

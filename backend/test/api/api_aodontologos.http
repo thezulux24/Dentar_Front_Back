@@ -1,0 +1,35 @@
+### Crear un nuevo odontologo
+POST {{baseUrl}}/odontologos
+Content-Type: application/json
+Authorization: Bearer {{authAdminToken}}
+
+{
+    "email": "odontologo@kaleidolab.com",
+    "clave": "1234567890",
+    "nombres": "odontologo", 
+    "apellidos": "kaleido",
+    "telefono": "3185047708",
+    "direccion": "Cali, Colombia",
+    "fecha_de_nacimiento": "1990-10-25",
+    "especialidad": "Ortodoncia"
+}
+
+
+### Actualizar perfil del odontólogo autenticado
+PATCH {{baseUrl}}/odontologos
+Content-Type: application/json
+Authorization: Bearer {{authOdontologoToken}}
+
+{
+    "nombres": "odontologo", 
+    "apellidos": "kaleido",  
+    "telefono": "3185047708", 
+    "direccion": "Cali, Colombia",
+    "fecha_de_nacimiento": "1997-10-25",
+    "direccion": "Avenida Principal #100-23"
+}
+
+
+### Obtener todos los odontólogos (público)
+GET {{baseUrl}}/odontologos 
+Content-Type: application/json

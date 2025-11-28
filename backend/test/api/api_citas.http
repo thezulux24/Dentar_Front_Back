@@ -1,0 +1,79 @@
+### Crear una cita
+POST {{baseUrl}}/citas
+Content-Type: application/json
+Authorization: Bearer {{authPacienteToken}}
+
+{
+    "id_paciente": "e6f9ddba-9ad5-4a62-a722-a43c903555d8",
+    "id_odontologo": "5d3a4b48-efe7-44be-8e00-543d32d8d112",
+    "fecha_cita": "2025-09-03",
+    "hora_inicio_cita": "15:00",
+    "hora_fin_cita": "16:00",
+    "motivo": "Consulta general",
+    "observaciones": "Ninguna"
+}
+
+
+### PARÁMETROS POSIBLES PARA CONSULTAS DE CITAS
+@fecha_inicio = 2025-09-02
+@fecha_fin = 2025-09-04T15:00:00
+@pagina = 1
+@cantidad_por_pagina = 10
+@id_odontologo = 571b2b61-b76e-4da9-988c-548879f5cacf
+@id_paciente = 231ad2ee-49b5-4b35-9c18-17fadeffa870
+@id_auxiliar = 231ad2ee-49b5-4b35-9c18-17fadeffa870
+@id_tratamiento = 231ad2ee-49b5-4b35-9c18-17fadeffa870
+@id_parametro_estado_cita = 231ad2ee-49b5-4b35-9c18-17fadeffa870
+
+### Consultar citas de un paciente
+GET {{baseUrl}}/citas/paciente?fecha_inicio={{fecha_inicio}}&fecha_fin={{fecha_fin}}&pagina={{pagina}}&cantidad_por_pagina={{cantidad_por_pagina}}
+Authorization: Bearer {{authPacienteToken}}
+
+### Cancelar cita por paciente
+PATCH {{baseUrl}}/citas/paciente/cancelar/3ed2179e-b3c2-4107-a582-cb060ee6ad8a
+Content-Type: application/json
+Authorization: Bearer {{authPacienteToken}}
+
+### Actualizar cita por paciente
+PATCH {{baseUrl}}/citas/paciente/actualizar/d7bbe08a-784c-4a79-b9e0-8ec5ca81d7de
+Content-Type: application/json
+Authorization: Bearer {{authPacienteToken}}
+
+{
+  "fecha_cita": "2025-09-10",
+  "hora_inicio_cita": "14:30",
+  "hora_fin_cita": "15:15",
+  "motivo": "Brackets5",
+  "observaciones": "Nada"
+}
+
+### Consultar una cita
+GET {{baseUrl}}/citas/d7bbe08a-784c-4a79-b9e0-8ec5ca81d7de
+Authorization: Bearer {{authPacienteToken}}
+
+### Consultar citas sin filtros
+GET {{baseUrl}}/citas
+Authorization: Bearer {{authOdontologoToken}}
+
+
+### Consultar citas con filtros opcionales
+GET {{baseUrl}}/citas?fecha_inicio={{fecha_inicio}}&fecha_fin={{fecha_fin}}&id_odontologo={{id_odontologo}}&id_paciente={{id_paciente}}&pagina={{pagina}}&cantidad_por_pagina={{cantidad_por_pagina}}
+Authorization: Bearer {{authOdontologoToken}}
+
+
+### Actualizar cita
+PATCH {{baseUrl}}/citas/de64447a-0e1a-430d-9060-4d78022119fc
+Content-Type: application/json
+Authorization: Bearer {{authOdontologoToken}}
+
+{
+  //"id_paciente": "571b2b61-b76e-4da9-988c-548879f5cacf",
+  //"id_odontologo": "571b2b61-b76e-4da9-988c-548879f5cacf",
+  //"id_auxiliar": "571b2b61-b76e-4da9-988c-548879f5cacf",
+  "fecha_cita": "2025-09-03",
+  "hora_inicio_cita": "14:30",
+  "hora_fin_cita": "15:15",
+  "motivo": "Brackets",
+  "observaciones": "El paciente refiere sensibilidad en el molar superior izquierdo",
+  "id_parametro_estado_cita": "f27daf81-3787-4f5d-bfe5-b031a3ced499"
+}

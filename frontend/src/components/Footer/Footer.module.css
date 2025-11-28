@@ -1,0 +1,30 @@
+
+.footer {
+    background-color: #BADAF7;
+    padding: 20px;
+    text-align: center;
+    margin-top: 0px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .copyright {
+    color: #0B006A;
+    text-align: left;
+    font-family: Montserrat-Medium.ttf;
+    src: url('../../assets/ttf/Montserrat-Medium.ttf') format('truetype');
+    font-weight: Medium;
+    font-style: normal;
+  }
+  
+  .icons {
+    display: flex;
+    align-items: center;
+  }
+  
+  .icon {
+    margin: 0 5px;
+    width: 30px;
+    height: 30px;
+  }

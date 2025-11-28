@@ -1,0 +1,1283 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #f4f4f8;
+  color: #222;
+}
+
+.app-root {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background-color: #1E1851;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+
+.logo-text-main {
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.logo-text-accent {
+  font-weight: 700;
+  font-size: 20px;
+  color: #E32780;
+}
+
+.logo-tooth {
+  margin-left: 4px;
+}
+
+.sidebar-role {
+  margin-bottom: 24px;
+  font-size: 12px;
+}
+
+.sidebar-role label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.sidebar-role select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  font-size: 13px;
+}
+
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-group {
+  margin-bottom: 16px;
+}
+
+.sidebar-group-title {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.sidebar-item {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.sidebar-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-item-active {
+  background-color: #E32780;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+}
+
+.btn-logout {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Main area */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background-color: #1977CC;
+  color: #ffffff;
+  padding: 14px 24px;
+}
+
+.topbar h1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.main-content {
+  padding: 20px 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Dashboard */
+.dashboard {
+  display: grid;
+  grid-template-columns: 2fr 1.6fr;
+  grid-template-rows: auto auto;
+  gap: 20px;
+}
+
+.welcome {
+  grid-column: 1 / 2;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.welcome-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #E32780;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.welcome-role {
+  font-size: 12px;
+  color: #555;
+}
+
+.appointments {
+  grid-column: 1 / 2;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.appointments h3 {
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.appointment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+  border-bottom: 1px solid #eee;
+}
+
+.appointment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #1977CC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+.appointment-info {
+  flex: 1;
+  margin-left: 4px;
+}
+
+.appointment-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.appointment-treatment {
+  font-size: 12px;
+  color: #777;
+}
+
+.appointment-time {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.indicators {
+  grid-column: 2 / 3;
+  grid-row: 1 / 3;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.indicators h3 {
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.indicators-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.indicator-card {
+  background-color: #f7f9ff;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.indicator-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.indicator-value {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: #E32780;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #1977CC;
+  border: 1px solid #1977CC;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Forms (Registrar paciente) */
+.form-page {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.form-page-title {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.form-input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 13px;
+}
+
+.form-section-title {
+  margin-top: 18px;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* Schedule page */
+.schedule-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.schedule-title {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.schedule-main {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 16px;
+}
+
+.schedule-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.calendar-header button {
+  border: none;
+  background: #f0f0ff;
+  border-radius: 999px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.calendar-header span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day-btn {
+  border: none;
+  padding: 6px 0;
+  font-size: 12px;
+  border-radius: 8px;
+  background-color: #f5f5ff;
+  cursor: pointer;
+}
+
+.calendar-day-selected {
+  background-color: #1977CC;
+  color: #ffffff;
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.calendar-legend button {
+  border-radius: 999px;
+  border: none;
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+.badge-today {
+  background-color: #E32780;
+  color: #ffffff;
+}
+
+.badge-available {
+  background-color: #1977CC;
+  color: #ffffff;
+}
+
+.badge-unavailable {
+  background-color: #ccc;
+  color: #333;
+}
+
+.specialty-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background-color: #e7f1ff;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.specialty-check {
+  color: #1977CC;
+}
+
+.specialty-list {
+  list-style: none;
+}
+
+.specialty-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.specialty-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #E32780;
+}
+
+.specialty-item-active span:last-child {
+  font-weight: 600;
+}
+
+.schedule-bottom {
+  display: grid;
+  grid-template-columns: 1.4fr 1.1fr;
+  gap: 16px;
+}
+
+.patient-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #1977CC;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.patient-card {
+  display: flex;
+  align-items: center;
+}
+
+.patient-info p {
+  font-size: 13px;
+}
+
+.dentists-list {
+  list-style: none;
+}
+
+.dentist-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.dentist-avatar-small {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #E32780;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.dentist-item-active span:last-child {
+  font-weight: 600;
+}
+
+/* Administración */
+.administracion-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-table th {
+  background-color: #f5f7ff;
+  text-align: left;
+  font-size: 12px;
+}
+
+.estado-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.estado-activo {
+  background-color: #d1f5d3;
+  color: #216e29;
+}
+
+.estado-inactivo {
+  background-color: #ffe0e0;
+  color: #b93636;
+}
+
+.btn-delete {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.admin-search {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  margin: 4px 0 6px;
+}
+
+.crear-usuarios-box {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* Crear usuario */
+.crearusuario-page {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  max-width: 420px;
+}
+
+.crearusuario-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.crearusuario-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.crearusuario-field label {
+  font-size: 12px;
+}
+
+.crearusuario-field input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 13px;
+}
+
+.crearusuario-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* Soporte */
+.support-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.support-chat-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.support-label {
+  font-size: 12px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.support-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 13px;
+}
+
+.support-start-btn {
+  margin-top: 8px;
+  padding: 8px 14px;
+  background-color: #E32780;
+  color: #ffffff;
+  border-radius: 999px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.support-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #25d366;
+}
+
+.support-messages {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bubble {
+  max-width: 80%;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.bubble-support {
+  background-color: #f1f1ff;
+  align-self: flex-start;
+}
+
+.bubble-user {
+  background-color: #E32780;
+  color: #ffffff;
+  align-self: flex-end;
+}
+
+.bubble-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.support-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.support-send-btn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: none;
+  background-color: #1977CC;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.support-contact-row {
+  display: flex;
+  gap: 10px;
+}
+
+.support-contact-card {
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.contact-title {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.contact-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-icon {
+  font-size: 16px;
+}
+
+.contact-text {
+  font-size: 13px;
+}
+
+/* Generic */
+.content-placeholder {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.patients-debug {
+  margin-top: 12px;
+  padding: 10px;
+  background-color: #f8f8ff;
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+@media (max-width: 960px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+  .indicators {
+    grid-column: 1 / -1;
+  }
+  .schedule-main,
+  .schedule-bottom {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    width: 220px;
+  }
+}
+
+/* Configuración */
+.config-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 40px;
+}
+
+.config-buttons {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.config-btn {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: none;
+  background-color: #E32780; /* rosa botones */
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.config-btn:hover {
+  filter: brightness(1.03);
+}
+
+.config-helper {
+  font-size: 12px;
+  color: #555;
+  text-align: center;
+  margin-top: -8px;
+}
+
+
+/* Facturación */
+.billing-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.billing-search-row {
+  position: relative;
+  max-width: 420px;
+}
+
+.billing-search-input {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 13px;
+}
+
+.billing-search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.billing-patient-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid #1977CC;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background-color: #ffffff;
+}
+
+.billing-patient-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #1977CC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.billing-patient-info {
+  flex: 1;
+  font-size: 13px;
+}
+
+.billing-patient-extra {
+  font-size: 12px;
+  text-align: right;
+}
+
+.billing-add-row {
+  margin-top: 4px;
+}
+
+.billing-table-wrapper {
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+
+.billing-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.billing-table th,
+.billing-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.billing-table th {
+  background-color: #f5f7ff;
+  text-align: left;
+  font-size: 12px;
+}
+
+.billing-desc {
+  max-width: 260px;
+}
+
+.billing-icon-cell {
+  text-align: center;
+}
+
+.billing-totals {
+  align-self: flex-end;
+  min-width: 220px;
+  font-size: 13px;
+}
+
+.billing-total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.billing-total-warning span:last-child {
+  color: #E32780;
+  font-weight: 600;
+}
+
+.billing-print-row {
+  margin-top: 8px;
+}
+
+.billing-print-btn {
+  width: 180px;
+}
+
+/* Factura impresión */
+.invoice-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.invoice-patient-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.invoice-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #1977CC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.invoice-patient-right {
+  font-size: 12px;
+  text-align: right;
+}
+
+.invoice-title-strip {
+  margin-top: 8px;
+  background-color: #f1f1f1;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.invoice-title-strip h2 {
+  font-size: 18px;
+}
+
+.invoice-info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.invoice-info-right {
+  text-align: right;
+}
+
+.invoice-patient-name {
+  font-weight: 600;
+}
+
+.invoice-table-wrapper {
+  margin-top: 8px;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.invoice-table th,
+.invoice-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.invoice-table th {
+  background-color: #f5f7ff;
+  text-align: left;
+  font-size: 12px;
+}
+
+.invoice-desc {
+  max-width: 260px;
+}
+
+.invoice-saldo {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1977CC;
+  display: flex;
+  gap: 8px;
+}
+
+.invoice-saldo-valor {
+  font-size: 20px;
+}
+
+.invoice-footer {
+  margin-top: 16px;
+  background-color: #1E1851;
+  color: #ffffff;
+  padding: 10px 12px;
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.invoice-print-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.invoice-print-btn {
+  width: 160px;
+}
+
+/* Sedes */
+.sedes-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.sedes-card {
+  width: 100%;
+  max-width: 520px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  border: 2px solid #1977CC;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.sedes-title {
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.sedes-content {
+  display: grid;
+  grid-template-columns: 1.1fr 1.4fr;
+  gap: 12px;
+}
+
+/* "Mapa" estilizado */
+.sedes-map {
+  position: relative;
+  min-height: 220px;
+  border-radius: 12px;
+  background: #f5f5ff;
+  overflow: hidden;
+}
+
+.sedes-map-bg {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(to right, rgba(255,255,255,0.6) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.6) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.sedes-pin {
+  position: absolute;
+  font-size: 20px;
+}
+
+.sedes-pin-1 {
+  top: 25%;
+  left: 30%;
+}
+
+.sedes-pin-2 {
+  top: 55%;
+  left: 55%;
+}
+
+.sedes-pin-3 {
+  top: 70%;
+  left: 20%;
+}
+
+/* Lista de sedes */
+.sedes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sede-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.sede-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background-color: #E32780;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.sede-info p {
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.sede-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .sedes-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Pago paciente */
+.pago-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.pago-card {
+  width: 100%;
+  max-width: 480px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.pago-logo-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 18px 0;
+}
+
+.pago-logo-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #0b2a5b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 600;
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  position: relative;
+}
+
+.pago-logo-circle::before,
+.pago-logo-circle::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 2px dotted rgba(255, 255, 255, 0.4);
+}
+
+.pago-logo-circle::before {
+  width: 100px;
+  height: 100px;
+}
+
+.pago-logo-circle::after {
+  width: 80px;
+  height: 80px;
+}
+
+.pago-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.pago-btn {
+  width: 220px;
+}

@@ -1,0 +1,42 @@
+### Autenticar administrador
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "correo": "admin@kaleidolab.com",
+  "clave": "c3n7CV3BeO4HAOU"
+}
+
+
+### Autenticar paciente
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "correo": "paciente@kaleidolab.com",
+  "clave": "clave123"
+}
+
+
+### Autenticar odontólogo
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "correo": "odontologo@kaleidolab.com",
+  "clave": "1234567890"
+}
+
+### Autenticar auxiliar
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "correo": "auxiliar@kaleidolab.com",
+  "clave": "1234567890"
+}
+
+
+### Validar Token
+GET {{baseUrl}}/auth/validar-token/{{authAdminToken}}
+Content-Type: application/json

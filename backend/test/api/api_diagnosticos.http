@@ -1,0 +1,155 @@
+### Variables para pruebas de diagnóstico
+@id_odontologo = 5d3a4b48-efe7-44be-8e00-543d32d8d112
+@id_cita = 3ed2179e-b3c2-4107-a582-cb060ee6ad8a
+
+### 1. Crear un paciente (si no existe)
+# @name createPatient
+POST {{baseUrl}}/pacientes
+Content-Type: application/json
+
+{
+  "email": "paciente.prueba@example.com",
+  "clave": "clave123",
+  "nombres": "Paciente",
+  "apellidos": "Prueba",
+  "telefono": "3001234567",
+  "direccion": "Calle Falsa 123",
+  "fecha_de_nacimiento": "1990-01-15"
+}
+
+### 2. Autenticar paciente y obtener token
+# @name authPatient
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "correo": "paciente.prueba@example.com",
+  "clave": "clave123"
+}
+
+### 3. Crear/Actualizar un diagnóstico (primera vez)
+POST {{baseUrl}}/diagnosticos
+Content-Type: application/json
+Authorization: Bearer {{authOdontologoToken}}
+
+{
+    "informacion_personal": {
+        "nombres": "Paciente",
+        "apellidos": "Prueba",
+        "fecha_nacimiento": "1990-01-15T00:00:00.000Z",
+        "email": "paciente.prueba@example.com",
+        "documento": "1234567890",
+        "direccion": "Calle Falsa 123",
+        "barrio": "Centro",
+        "ocupacion": "Estudiante"
+    },
+    "informacion_acudiente": {
+        "nombre_acudiente": "Acudiente",
+        "apellido_acudiente": "Prueba",
+        "tel_acudiente": "3001234567",
+        "ocupacion": "Ama de casa"
+    },
+    "historial_medico": {
+        "condiciones_previas": "Ninguna",
+        "alergias": "Penicilina",
+        "medicamentos_actuales": "Ninguno"
+    },
+    "informacion_tratamiento": {
+        "motivo_consulta": "Dolor de muela",
+        "procedimiento_principal": "Extracción",
+        "notas_relevantes": "Paciente ansioso",
+        "eps": "Sura"
+    },
+    "anamnesis": {
+        "tratamiento_medico": "No",
+        "ingestion_medicamentos": "No",
+        "reacciones_alergicas": "No",
+        "hemorragias": "No",
+        "irradiaciones": "No",
+        "sinusitis": "No",
+        "enfermedades_respiratorias": "No",
+        "cardiopatias": "No",
+        "diabetes": "No",
+        "fiebre_reumatica": "No",
+        "hepatitis": "No",
+        "hipertension_arterial": "No",
+        "vih_sida": "No",
+        "habito_higiene_oral": "Bueno"
+    },
+    "examen_fisico": {
+        "artic_tempora_mandibular": "Normal",
+        "labios": "Normal",
+        "lengua": "Normal",
+        "paladar": "Normal",
+        "piso_de_boca": "Normal",
+        "carrillos": "Normal",
+        "glandulas_salivales": "Normal",
+        "maxilares": "Normal",
+        "senos_maxilares": "Normal",
+        "musculos_masticadores": "Normal",
+        "nervios": "Normal",
+        "vascular": "Normal",
+        "linfatico_regional": "Normal",
+        "funciones_de_oclusion": "Normal"
+    },
+    "odontograma": {
+        "supernumerarios": "No",
+        "abrasion": "No",
+        "manchas": "No",
+        "patologia_pulpar": "No",
+        "placa_blanda": "No",
+        "placa_calcificada": "No"
+    },
+    "odontograma_denticion": {
+        "18": "Sano",
+        "38": "Sano",
+        "17": "Sano",
+        "37": "Sano",
+        "16": "Caries",
+        "36": "Sano",
+        "55 - 15": "Sano",
+        "75 - 35": "Sano",
+        "54 - 14": "Sano",
+        "74 - 34": "Sano",
+        "53 - 13": "Sano",
+        "73 - 33": "Sano",
+        "52 - 12": "Sano",
+        "72 - 32": "Sano",
+        "51 - 11": "Sano",
+        "71 - 31": "Sano",
+        "61 - 21": "Sano",
+        "81 - 41": "Sano",
+        "62 - 22": "Sano",
+        "82 - 42": "Sano",
+        "63 - 23": "Sano",
+        "83 - 43": "Sano",
+        "64 - 24": "Sano",
+        "84 - 44": "Sano",
+        "65 - 25": "Sano",
+        "85 - 45": "Sano",
+        "26": "Sano",
+        "46": "Sano",
+        "27": "Sano",
+        "47": "Sano",
+        "28": "Sano",
+        "48": "Sano"
+    },
+    "plan_tratamiento": {
+        "remision": "No",
+        "limpieza_profunda": "Si",
+        "clasificacion_angle": "Clase I",
+        "atm": "Normal",
+        "lado_limpieza": "Izquierdo"
+    },
+    "resumen": {
+        "notas_medico": "Se recomienda extracción del 16 y limpieza profunda."
+    },
+    "id_odontologo": "{{id_odontologo}}",
+    "id_cita": "{{id_cita}}"
+}
+
+### Consultar el último diagnóstico de un paciente por su ID de usuario
+# @name getDiagnosisByUserId
+GET {{baseUrl}}/diagnosticos/feff5b87-a174-43ba-b421-4cd8a583126e
+Content-Type: application/json
+Authorization: Bearer {{authOdontologoToken}}

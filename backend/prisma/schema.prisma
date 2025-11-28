@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model administradores {
+  id_usuario                String      @id @db.Uuid
+  fecha_creacion            DateTime?   @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion       DateTime?   @db.Timestamptz(6)
+  eliminado                 Int?        @default(-1)
+  fecha_eliminacion         DateTime?   @db.Timestamptz(6)
+  // Para clasificar tipos de administradores con parámetros (ej: superadmin, admin local, etc.)
+  id_parametro_tipo_admin   String?     @db.Uuid
+  parametros                parametros? @relation(fields: [id_parametro_tipo_admin], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
+
+  // relación con usuarios
+  usuarios                  usuarios    @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model auxiliares {
+  id_usuario                 String      @id @db.Uuid
+  fecha_creacion             DateTime?   @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion        DateTime?   @db.Timestamptz(6)
+  eliminado                  Int?        @default(-1)
+  fecha_eliminacion          DateTime?   @db.Timestamptz(6)
+  id_parametro_tipo_auxiliar String?     @db.Uuid
+  parametros                 parametros? @relation(fields: [id_parametro_tipo_auxiliar], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
+  usuarios                   usuarios    @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  citas                      citas[]
+}
+
+model citas {
+  id_cita                  String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion           DateTime?      @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion      DateTime?      @db.Timestamptz(6)
+  eliminado                Int?           @default(-1)
+  fecha_eliminacion        DateTime?      @db.Timestamptz(6)
+  id_paciente              String?        @db.Uuid
+  id_odontologo            String?        @db.Uuid
+  id_auxiliar              String?        @db.Uuid
+  fecha_cita               DateTime?      @db.Timestamptz(6)
+  hora_inicio_cita         DateTime?      @db.Timestamptz(6)
+  hora_fin_cita            DateTime?      @db.Timestamptz(6)
+  id_parametro_estado_cita String?        @db.Uuid
+  motivo                   String?
+  observaciones            String?
+  id_tratamiento_usuario   String?        @db.Uuid
+  auxiliares               auxiliares?    @relation(fields: [id_auxiliar], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  odontologos              odontologos?   @relation(fields: [id_odontologo], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  pacientes                pacientes?     @relation(fields: [id_paciente], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  estado                   parametros?    @relation("CitasEstado", fields: [id_parametro_estado_cita], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
+  tratamientos_usuarios    tratamientos_usuarios?  @relation("TratamientoUsuario", fields: [id_tratamiento_usuario], references: [id_tratamiento_usuario], onDelete: NoAction, onUpdate: NoAction)
+  diagnosticos             diagnosticos[]
+  pagos                    pagos[]
+}
+
+model diagnosticos {
+  id_diagnostico      String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion      DateTime?    @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime?    @db.Timestamptz(6)
+  eliminado           Int?         @default(-1)
+  fecha_eliminacion   DateTime?    @db.Timestamptz(6)
+  id_paciente         String?      @db.Uuid
+  id_odontologo       String?      @db.Uuid
+  id_cita             String?      @db.Uuid
+  fecha_diagnostico   DateTime?    @default(now()) @db.Timestamptz(6)
+  descripcion         String?
+  recomendaciones     Json?        @db.Json
+  archivos_adjuntos   Json?        @db.Json
+
+  // Nuevos campos
+  historial_medico    Json?        @db.Json
+  informacion_tratamiento    Json?        @db.Json
+  anamnesis           Json?        @db.Json
+  examen_fisico       Json?        @db.Json 
+  odontograma         Json?        @db.Json
+  odontograma_denticion      Json?        @db.Json
+  plan_tratamiento    Json?        @db.Json
+  notas_medico        String?
+
+  citas               citas?       @relation(fields: [id_cita], references: [id_cita], onDelete: NoAction, onUpdate: NoAction)
+  odontologos         odontologos? @relation(fields: [id_odontologo], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  pacientes           pacientes?   @relation(fields: [id_paciente], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model historial_clinico {
+  id_historial        String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion      DateTime?  @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime?  @db.Timestamptz(6)
+  eliminado           Int?       @default(-1)
+  fecha_eliminacion   DateTime?  @db.Timestamptz(6)
+  id_paciente         String?    @db.Uuid
+  descripcion         String?
+  antecedentes        Json?      @db.Json
+  alergias            Json?      @db.Json
+  medicamentos        Json?      @db.Json
+  pacientes           pacientes? @relation(fields: [id_paciente], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model mensajes {
+  id_mensaje                               String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion                           DateTime?   @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion                      DateTime?   @db.Timestamptz(6)
+  eliminado                                Int?        @default(-1)
+  fecha_eliminacion                        DateTime?   @db.Timestamptz(6)
+  id_remitente                             String?     @db.Uuid
+  id_receptor                              String?     @db.Uuid
+  id_parametro_estado_mensaje              String?     @db.Uuid
+  contenido                                String?
+  fecha_envio                              DateTime?   @default(now()) @db.Timestamptz(6)
+  parametros                               parametros? @relation(fields: [id_parametro_estado_mensaje], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
+  usuarios_mensajes_id_receptorTousuarios  usuarios?   @relation("mensajes_id_receptorTousuarios", fields: [id_receptor], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  usuarios_mensajes_id_remitenteTousuarios usuarios?   @relation("mensajes_id_remitenteTousuarios", fields: [id_remitente], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model odontologos {
+  id_usuario          String         @id @db.Uuid
+  fecha_creacion      DateTime?      @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime?      @db.Timestamptz(6)
+  eliminado           Int?           @default(-1)
+  fecha_eliminacion   DateTime?      @db.Timestamptz(6)
+  especialidad        String?        @db.VarChar(100)
+  horario_trabajo     Json?          @db.Json
+  firma_digital       String?        @db.VarChar(255)
+  sede                String?        @db.VarChar(255)
+  citas               citas[]
+  diagnosticos        diagnosticos[]
+  usuarios            usuarios       @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model pacientes {
+  id_usuario             String              @id @db.Uuid
+  fecha_creacion         DateTime?           @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion    DateTime?           @db.Timestamptz(6)
+  eliminado              Int?                @default(-1)
+  fecha_eliminacion      DateTime?           @db.Timestamptz(6)
+  fecha_nacimiento       DateTime?           @db.Date
+  alergias               String?
+  tratamientos_previos   String?
+  tolerante_anestesia    String?
+  configuracion_paciente Json?               @db.Json
+  fecha_registro         DateTime?           @default(now()) @db.Timestamptz(6)
+
+  // Nuevos campos
+  barrio                      String?
+  ocupacion                   String?
+  eps                         String?
+  informacion_acudiente       Json?               @db.Json
+  condiciones_medicas_previas String?
+  medicamentos_actuales       String?
+
+  citas                  citas[]
+  diagnosticos           diagnosticos[]
+  historial_clinico      historial_clinico[]
+  usuarios               usuarios            @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model pagos {
+  id_pago                                               String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion                                        DateTime?   @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion                                   DateTime?   @db.Timestamptz(6)
+  eliminado                                             Int?        @default(-1)
+  fecha_eliminacion                                     DateTime?   @db.Timestamptz(6)
+  id_cita                                               String?     @db.Uuid
+  monto                                                 Decimal?    @db.Decimal
+  id_parametro_metodo_pago                              String?     @db.Uuid
+  id_parametro_estado_pago                              String?     @db.Uuid
+  fecha_pago                                            DateTime?   @default(now()) @db.Timestamptz(6)
+  citas                                                 citas?      @relation(fields: [id_cita], references: [id_cita], onDelete: NoAction, onUpdate: NoAction)
+  parametros_pagos_id_parametro_estado_pagoToparametros parametros? @relation("pagos_id_parametro_estado_pagoToparametros", fields: [id_parametro_estado_pago], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
+  parametros_pagos_id_parametro_metodo_pagoToparametros parametros? @relation("pagos_id_parametro_metodo_pagoToparametros", fields: [id_parametro_metodo_pago], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model parametros {
+  id_parametro                                     String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion                                   DateTime?         @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion                              DateTime?         @db.Timestamptz(6)
+  eliminado                                        Int?              @default(-1)
+  fecha_eliminacion                                DateTime?         @db.Timestamptz(6)
+  id_tipo_parametro                                String?           @db.Uuid
+  nombre                                           String?           @db.VarChar(100)
+  descripcion                                      String?
+  auxiliares                                       auxiliares[]
+  administradores                                  administradores[]
+  citasEstado                                      citas[]           @relation("CitasEstado")
+  mensajes                                         mensajes[]
+  pagos_pagos_id_parametro_estado_pagoToparametros pagos[]           @relation("pagos_id_parametro_estado_pagoToparametros")
+  pagos_pagos_id_parametro_metodo_pagoToparametros pagos[]           @relation("pagos_id_parametro_metodo_pagoToparametros")
+  tipos_parametros                                 tipos_parametros? @relation(fields: [id_tipo_parametro], references: [id_tipo_parametro], onDelete: NoAction, onUpdate: NoAction)
+  tratamientos_usuarios                            tratamientos_usuarios[] @relation("EstadoTratamiento")
+  usuariosRol                                      usuarios[]        @relation("UsuarioRol")
+}
+
+model tipos_parametros {
+  id_tipo_parametro   String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion      DateTime? @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime? @db.Timestamptz(6)
+  eliminado           Int?      @default(-1)
+  fecha_eliminacion   DateTime? @db.Timestamptz(6)
+  nombre              String?   @db.VarChar(100)
+  descripcion         String?
+  parametros          parametros[]
+}
+
+model tratamientos {
+  id_tratamiento                  String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion                  DateTime?   @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion             DateTime?   @db.Timestamptz(6)
+  eliminado                       Int?        @default(-1)
+  fecha_eliminacion               DateTime?   @db.Timestamptz(6)
+  nombre_tratamiento              String?     @db.VarChar(100)
+  descripcion                     String?
+  precio_estimado                 Decimal?    @db.Decimal
+  duracion                        Int?
+  ar_model_url                    String?     @db.VarChar(255)
+  imagen_url                      String?     @db.VarChar(255)
+  
+  tratamientos_usuarios                        tratamientos_usuarios[]
+}
+
+model tratamientos_usuarios {
+  id_tratamiento_usuario          String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id_usuario                      String      @db.Uuid
+  id_tratamiento                  String      @db.Uuid
+  fecha_creacion                  DateTime?   @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion             DateTime?   @db.Timestamptz(6)
+  eliminado                       Int?        @default(-1)
+  fecha_eliminacion               DateTime?   @db.Timestamptz(6)
+  id_parametro_estado_tratamiento String?     @db.Uuid
+
+  usuario     usuarios      @relation(fields: [id_usuario], references: [id_usuario])
+  tratamiento tratamientos  @relation(fields: [id_tratamiento], references: [id_tratamiento])
+  parametros  parametros?   @relation("EstadoTratamiento", fields: [id_parametro_estado_tratamiento], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
+  citas       citas[]       @relation("TratamientoUsuario")
+}
+
+model usuarios {
+  id_usuario                               String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion                           DateTime?    @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion                      DateTime?    @db.Timestamptz(6)
+  eliminado                                Int?         @default(-1)
+  fecha_eliminacion                        DateTime?    @db.Timestamptz(6)
+  id_parametro_rol                         String?      @db.Uuid
+  nombres                                  String?      @db.VarChar(100)
+  apellidos                                String?      @db.VarChar(100)
+  email_                                   String?      @unique(map: "usuarios_email_key") @map("email ") @db.VarChar(100)
+  telefono                                 String?      @db.VarChar(50)
+  usuario                                  String?      @db.VarChar(100)
+  clave                                    String?      @db.VarChar(100)
+  avatar_url                               String?      @db.VarChar(255)
+  identificacion                           String?      @db.VarChar
+  fecha_de_nacimiento                      DateTime?    @db.Timestamp(6)
+  informacion_personal                     String?      @db.VarChar
+  direccion                                String?      @db.VarChar
+  administradores                          administradores?
+  auxiliares                               auxiliares?
+  mensajes_mensajes_id_receptorTousuarios  mensajes[]   @relation("mensajes_id_receptorTousuarios")
+  mensajes_mensajes_id_remitenteTousuarios mensajes[]   @relation("mensajes_id_remitenteTousuarios")
+  odontologos                              odontologos?
+  pacientes                                pacientes?
+  rol                                      parametros?  @relation("UsuarioRol", fields: [id_parametro_rol], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
+  tratamientos                             tratamientos_usuarios[]
+}

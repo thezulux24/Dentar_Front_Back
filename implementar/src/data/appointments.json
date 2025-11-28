@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Ana Delgado",
+    "treatment": "Blanqueamiento",
+    "time": "10:00am"
+  },
+  {
+    "id": 2,
+    "name": "Andrés Gonzalez",
+    "treatment": "Blanqueamiento",
+    "time": "12:00am"
+  },
+  {
+    "id": 3,
+    "name": "Mariana Lopez",
+    "treatment": "Tratamiento de conducto",
+    "time": "9:00am"
+  },
+  {
+    "id": 4,
+    "name": "Carlos Hernández",
+    "treatment": "Blanqueamiento",
+    "time": "10:00am"
+  }
+]

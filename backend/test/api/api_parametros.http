@@ -1,0 +1,37 @@
+# Variables para tipos de parámetros permitidos
+@ESTADOS_CITA = estado_de_cita
+@ROL_USUARIO = rol_de_usuario
+@METODOS_PAGO = metodo_de_pago
+@ESTADOS_PAGO = estado_de_pago
+@ESTADOS_TRATAMIENTO = estado_de_tratamiento
+@ESTADOS_MENSAJE = estado_de_mensaje
+
+
+### Consultar parámetros por tipo (público) - Ejemplo rol de usuario
+GET {{baseUrl}}/parametros?tipo_parametro={{ROL_USUARIO}}
+Content-Type: application/json
+
+### Consultar parámetros por tipo - Ejemplo estados de cita
+# @name findByTipoParametroCita
+GET {{baseUrl}}/parametros?tipo_parametro={{ESTADOS_CITA}}
+Content-Type: application/json
+
+### Consultar parámetros por tipo - Ejemplo métodos de pago
+# @name findByTipoParametroPago
+GET {{baseUrl}}/parametros?tipo_parametro={{METODOS_PAGO}}
+Content-Type: application/json
+
+### Consultar parámetros por tipo - Ejemplo estados de pago
+# @name findByTipoParametroEstadoPago
+GET {{baseUrl}}/parametros?tipo_parametro={{ESTADOS_PAGO}}
+Content-Type: application/json
+
+### Consultar parámetros por tipo - Ejemplo estados de tratamiento
+# @name findByTipoParametroTratamiento
+GET {{baseUrl}}/parametros?tipo_parametro={{ESTADOS_TRATAMIENTO}}
+Content-Type: application/json
+
+### Consultar parámetros por tipo - Ejemplo estados de mensaje
+# @name findByTipoParametroMensaje
+GET {{baseUrl}}/parametros?tipo_parametro={{ESTADOS_MENSAJE}}
+Content-Type: application/json

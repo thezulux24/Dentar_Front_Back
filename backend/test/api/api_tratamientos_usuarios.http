@@ -1,0 +1,17 @@
+### Asignar un tratamiento a un paciente (requiere token de admin/auxiliar/odontologo)
+POST {{baseUrl}}/tratamientos-usuarios
+Content-Type: application/json
+Authorization: Bearer {{authAdminToken}}
+
+{
+  "id_usuario": "feff5b87-a174-43ba-b421-4cd8a583126e",
+  "id_tratamiento": "9c378060-b252-41f5-8b63-69e3e6b0bd67"
+}
+
+### Obtener tratamientos de un paciente específico (requiere token de admin/auxiliar/odontologo)
+GET {{baseUrl}}/tratamientos-usuarios/paciente/feff5b87-a174-43ba-b421-4cd8a583126e?pagina=1&cantidad_por_pagina=5
+Authorization: Bearer {{authAuxiliarToken}}
+
+### Obtener mis tratamientos (requiere token de paciente)
+GET {{baseUrl}}/tratamientos-usuarios/mis-tratamientos?pagina=1&cantidad_por_pagina=5
+Authorization: Bearer {{authPacienteToken}}

@@ -1,0 +1,39 @@
+{
+  "Administrador": [
+    "inicio",
+    "agendamiento",
+    "registrar",
+    "historial",
+    "agendar",
+    "administracion",
+    "facturacion",
+    "recursos",
+    "perfil",
+    "soporte",
+    "configuracion"
+  ],
+  "Odontologo": [
+    "inicio",
+    "agendamiento",
+    "historial",
+    "recursos",
+    "perfil",
+    "soporte"
+  ],
+  "Auxiliar": [
+    "inicio",
+    "registrar",
+    "agendar",
+    "facturacion",
+    "perfil",
+    "soporte"
+  ],
+  "Cliente": [
+    "inicio",
+    "agendamiento",
+    "perfil",
+    "soporte",
+    "pago",
+    "configuracion"
+  ]
+}

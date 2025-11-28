@@ -1,0 +1,69 @@
+.container {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+  }
+  
+  .photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-right: 20px;
+    object-fit: cover;
+  }
+  
+  .textContainer {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .greeting {
+    font-size: 30px;
+    color: #0B006A;
+    /* margin-bottom: 2px; */
+    margin:5px;
+    src: url('../../assets/ttf/Montserrat-Regular.ttf') format('truetype');
+    font-weight: Regular;
+    font-style: normal;
+  }
+  
+  .message {
+    font-size: 23px;
+    margin:0px;
+    color: #777777;
+    src: url('../../assets/ttf/Montserrat-Regular.ttf') format('truetype');
+    font-weight: Regular;
+    font-style: normal;
+  }
+  
+  
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  
+    .photo {
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+
+    .greeting {
+        font-size: 15px;
+        /* margin-bottom: 3px; */
+        src: url('../../assets/ttf/Montserrat-Regular.ttf') format('truetype');
+        font-weight: Regular;
+        font-style: normal;
+
+      }
+      
+      .message {
+        font-size: 11px;
+        src: url('../../assets/ttf/Montserrat-Regular.ttf') format('truetype');
+        font-weight: Regular;
+        font-style: normal;
+      }
+  }
