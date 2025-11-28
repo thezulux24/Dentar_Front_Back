@@ -47,8 +47,23 @@ const Weekly: React.FC<MyProps> = ({
     }
 
     const monthIndex = monthsMap[month.toUpperCase()];
-    return new Date(year, monthIndex, 1);
+    // En lugar de usar el día 1, usar el día 15 para garantizar que estamos en el mes correcto
+    // Esto evita que al calcular el lunes de la semana, retrocedamos al mes anterior
+    return new Date(year, monthIndex, 15);
   });
+
+  // Sincronizar con el mes seleccionado desde Calendar
+  useEffect(() => {
+    if (month && month !== "" && year) {
+      const monthIndex = monthsMap[month.toUpperCase()];
+      if (monthIndex !== undefined) {
+        // Solo actualizar si el mes es diferente al actual
+        if (centerDate.getMonth() !== monthIndex) {
+          setCenterDate(new Date(year, monthIndex, 15));
+        }
+      }
+    }
+  }, [month, year]);
 
   // Calcular semana (lunes a domingo) a partir de centerDate
   const weekDays = useMemo(() => {
@@ -87,8 +102,9 @@ const Weekly: React.FC<MyProps> = ({
 
   // Actualizar rango de fechas en cada cambio de semana
   useEffect(() => {
-    const start = weekDays[0];
-    const end = weekDays[weekDays.length - 1];
+    // Crear nuevas instancias para evitar mutar el array
+    const start = new Date(weekDays[0]);
+    const end = new Date(weekDays[weekDays.length - 1]);
 
     // Pongo la hora al inicio del día
     start.setHours(0, 0, 0, 0);

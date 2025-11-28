@@ -5,7 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { MainLayout, PublicLayout, PageAnimation, AlertSystem, AuthLoader, PrivateRoute } from "./components/imports";
 
 //Pages
-import { NotFound, Login, Home, Calendar, CalendarPatient, Register, Support, Dashboard, Resources, Diagnostics, NewPatient, PatientPage, Settings, DashboardPatient, IframePage, IframePage2, IframePage3, Billing} from "./pages/imports";
+import { NotFound, Login, Home, Calendar, CalendarPatient, Register, Support, Dashboard, Resources, Diagnostics, NewPatient, PatientPage, Settings, DashboardPatient, IframePage, IframePage2, IframePage3, Billing, Payment} from "./pages/imports";
 
 
 function App() {
@@ -39,6 +39,7 @@ function App() {
         <Route path="/paciente" element={<AuthLoader><PrivateRoute> <MainLayout /> </PrivateRoute></AuthLoader>}>
           <Route path="inicio" element={<PageAnimation key="inicio"><DashboardPatient/></PageAnimation>} />
           <Route path="calendario" element={<PageAnimation key="calendariopaciente"> <CalendarPatient /> </PageAnimation>} />
+          <Route path="pagos" element={<PageAnimation key="pagos"><Payment /></PageAnimation>} />
           <Route path="recursos" element={<PageAnimation key="recursospaciente"><Resources /></PageAnimation>} />
           <Route path="soporte" element={<PageAnimation key="supportpatient"><Support /></PageAnimation>} />
           <Route path="configuracion" element={<PageAnimation key="configpaciente"><Settings /></PageAnimation>} />

@@ -25,6 +25,7 @@ const navItems = [
     { label: 'Inicio', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/home.svg`} alt="Home" />, path: 'inicio' },
     { label: 'Calendario', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/calendar.svg`} alt="Calendar" />, path: 'calendario' },
     { label: 'Pacientes', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/patients.svg`} alt="Patients" />, path: 'diagnosticos' },
+    { label: 'Pagos', icon: <ReceiptIcon />, path: 'pagos', roles: ['paciente'] }, // Solo paciente
     { label: 'Facturación', icon: <ReceiptIcon />, path: 'facturacion', roles: ['auxiliar'] }, // Solo auxiliar
     { label: 'Recursos', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/resources.svg`} alt="Resources" />, path: 'recursos' },
     { label: 'Soporte', icon: <HelpOutlineIcon />, path: 'soporte' },
