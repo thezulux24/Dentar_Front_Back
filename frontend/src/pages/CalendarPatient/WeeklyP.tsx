@@ -50,7 +50,7 @@ const Weekly: React.FC<MyProps> = ({
     return new Date(year, monthIndex, 1);
   });
 
-  // Calcular semana (lunes a viernes) a partir de centerDate
+  // Calcular semana (lunes a domingo) a partir de centerDate
   const weekDays = useMemo(() => {
 
     const current = new Date(centerDate);
@@ -61,7 +61,7 @@ const Weekly: React.FC<MyProps> = ({
     const monday = new Date(current);
     monday.setDate(current.getDate() + diffToMonday);
 
-    return Array.from({ length: 5 }).map((_, i) => {
+    return Array.from({ length: 7 }).map((_, i) => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
       d.setHours(0, 0, 0, 0)
@@ -173,7 +173,7 @@ const Weekly: React.FC<MyProps> = ({
           
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="body2" color="textSecondary">
-              Semana del {formatToReadableDate(weekDays[0].toString())} al {formatToReadableDate(weekDays[4].toString())}
+              Semana del {formatToReadableDate(weekDays[0].toString())} al {formatToReadableDate(weekDays[6].toString())}
             </Typography>
           </Box>
           
@@ -202,7 +202,7 @@ const Weekly: React.FC<MyProps> = ({
             const isCurrentMonth = date.getMonth() === centerDate.getMonth();
 
             return (
-              <Grid size={{ xs: 12, sm: 6, md: 2.4 }} key={iso}>
+              <Grid size={{ xs: 12, sm: 6, md: 1.714 }} key={iso}>
                 <Typography
                   variant="subtitle2"
                   gutterBottom
