@@ -94,3 +94,6 @@ Desktop.ini
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Analysis and documentation files
+FACTURACION_ANALISIS.md

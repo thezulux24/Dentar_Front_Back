@@ -16,6 +16,7 @@ export { default as DashboardPatient} from './Dashboard/DashboardPatient';
 export { default as IframePage} from './Filters/TeethWhitening';
 export { default as IframePage2} from './Filters/Ortodoncy';
 export { default as IframePage3} from './Filters/Protesis';
+export { default as Billing} from './Billing/Billing';
 /* export { default as TeethWhiteningFilter} from './AR/TeethWhiteFilter'; */
 
 

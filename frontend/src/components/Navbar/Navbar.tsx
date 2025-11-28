@@ -6,6 +6,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import GroupIcon from '@mui/icons-material/Group';
 import DescriptionIcon from '@mui/icons-material/Description'; */
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 //import SettingsIcon from '@mui/icons-material/Settings';
 import MenuIcon from '@mui/icons-material/Menu'
 import { useTheme } from '@mui/material/styles';
@@ -24,6 +25,7 @@ const navItems = [
     { label: 'Inicio', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/home.svg`} alt="Home" />, path: 'inicio' },
     { label: 'Calendario', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/calendar.svg`} alt="Calendar" />, path: 'calendario' },
     { label: 'Pacientes', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/patients.svg`} alt="Patients" />, path: 'diagnosticos' },
+    { label: 'Facturación', icon: <ReceiptIcon />, path: 'facturacion', roles: ['auxiliar'] }, // Solo auxiliar
     { label: 'Recursos', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/resources.svg`} alt="Resources" />, path: 'recursos' },
     { label: 'Soporte', icon: <HelpOutlineIcon />, path: 'soporte' },
     //{ label: 'Configuración', icon: <SettingsIcon />, to: '/doctor/configuracion' },
@@ -39,8 +41,12 @@ const Navbar: React.FC = () => {
     const toggleDrawer = (open: boolean) => () => setDrawerOpen(open);
 
     const filteredNavItems = navItems.filter(item => {
-        // rol  "paciente", se omite el ítem 
+        // rol "paciente", se omite el ítem Pacientes
         if ((user?.rol).toLowerCase() === 'paciente' && item.label === 'Pacientes') {
+            return false;
+        }
+        // Si el item tiene roles específicos, verificar que el usuario tenga ese rol
+        if (item.roles && !item.roles.includes((user?.rol).toLowerCase())) {
             return false;
         }
         return true;
