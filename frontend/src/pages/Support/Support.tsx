@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { WhatsApp } from '@mui/icons-material';
 import useAuthStore from '../../store/authStore';
+import { SupportChat } from '../../components/imports';
 
 const Support = () => {
   const theme = useTheme();
@@ -84,24 +85,79 @@ const Support = () => {
             fontSize: { xs: "1rem", md: "1.2rem", lg: "1.4rem" },
             lineHeight: 1.6
           }}>
-            Si algo falla, intenta recargar la página o vuelve a intentarlo más tarde.
-            Si el problema persiste, por favor contáctanos.
+            Nuestro asistente virtual está disponible{' '}
+            <Box component="span" sx={{ color: "secondary.main", fontWeight: "bold" }}>
+              24/7
+            </Box>{' '}
+            para ayudarte con problemas técnicos, dudas sobre la plataforma y consultas generales.
           </Typography>
 
-          <Button
-            variant="contained"
-            color="primary"
-            size={isMobile ? "medium" : "large"}
-            sx={{
-              alignSelf: 'flex-start',
-              px: 4,
-              borderRadius: 2,
-              textTransform: 'none',
-              minWidth: '175px',
-            }}
-          >
-            Ayuda
-          </Button>
+          {/* Chat de Soporte Técnico */}
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            mt: 2
+          }}>
+            <SupportChat />
+          </Box>
+
+          {/* Información de contacto */}
+          <Box sx={{
+            mt: 4,
+            p: 3,
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Typography variant="h6" sx={{ mb: 2, color: 'primary.main', fontWeight: 600 }}>
+              ¿Necesitas ayuda adicional?
+            </Typography>
+            <Stack spacing={1.5}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 80 }}>
+                  Email:
+                </Typography>
+                <Typography 
+                  component="a" 
+                  href="mailto:soporte@dentar.com"
+                  variant="body2" 
+                  sx={{ 
+                    color: 'secondary.main',
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' }
+                  }}
+                >
+                  soporte@dentar.com
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 80 }}>
+                  Teléfono:
+                </Typography>
+                <Typography 
+                  component="a" 
+                  href="tel:+573168360517"
+                  variant="body2" 
+                  sx={{ 
+                    color: 'secondary.main',
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' }
+                  }}
+                >
+                  +57 316 836 0517
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 80 }}>
+                  Horario:
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  Lunes a Viernes: 8:00 AM - 6:00 PM
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
         </Stack>
       </Container>
     </Box>

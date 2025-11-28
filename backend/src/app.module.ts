@@ -15,6 +15,7 @@ import { TratamientosModule } from './tratamientos/tratamientos.module';
 import { TratamientosUsuariosModule } from './tratamientos_usuarios/tratamientos_usuarios.module';
 import { FilesModule } from './files/files.module';
 import { DiagnosticosModule } from './diagnosticos/diagnosticos.module';
+import { SoporteModule } from './soporte/soporte.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { DiagnosticosModule } from './diagnosticos/diagnosticos.module';
     TratamientosUsuariosModule,
     DiagnosticosModule,
     FilesModule,
+    SoporteModule,
     ConfigModule.forRoot({
       isGlobal: true, // Hace que esté disponible en toda la app sin tener que importarlo cada vez
     }),

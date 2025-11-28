@@ -35,3 +35,6 @@ export { default as AddTreatmentModal} from './AddTreatmentModal/AddTreatmentMod
 // popup
 export { default as PreviewPopup} from './PreviewPopup/PreviewPopup'
 
+// Soporte
+export { default as SupportChat } from './SupportChat/SupportChat';
+

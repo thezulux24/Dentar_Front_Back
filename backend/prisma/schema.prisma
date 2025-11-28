@@ -264,4 +264,48 @@ model usuarios {
   pacientes                                pacientes?
   rol                                      parametros?  @relation("UsuarioRol", fields: [id_parametro_rol], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
   tratamientos                             tratamientos_usuarios[]
+  tickets_soporte                          tickets_soporte[]
+  mensajes_soporte_usuario                 mensajes_soporte[] @relation("MensajesSoporteUsuario")
+}
+
+model tickets_soporte {
+  id_ticket           String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion      DateTime?           @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime?           @db.Timestamptz(6)
+  eliminado           Int?                @default(-1)
+  fecha_eliminacion   DateTime?           @db.Timestamptz(6)
+  id_usuario          String?             @db.Uuid
+  asunto              String?             @db.VarChar(200)
+  estado              String?             @default("abierto") @db.VarChar(50) // abierto, en_proceso, cerrado
+  prioridad           String?             @default("media") @db.VarChar(50) // baja, media, alta
+  fecha_cierre        DateTime?           @db.Timestamptz(6)
+  usuario             usuarios?           @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+  mensajes            mensajes_soporte[]
+}
+
+model mensajes_soporte {
+  id_mensaje_soporte  String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion      DateTime?        @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime?        @db.Timestamptz(6)
+  eliminado           Int?             @default(-1)
+  fecha_eliminacion   DateTime?        @db.Timestamptz(6)
+  id_ticket           String?          @db.Uuid
+  id_usuario          String?          @db.Uuid
+  contenido           String?
+  es_bot              Boolean?         @default(false) // true si es respuesta automática
+  leido               Boolean?         @default(false)
+  ticket              tickets_soporte? @relation(fields: [id_ticket], references: [id_ticket], onDelete: Cascade, onUpdate: NoAction)
+  usuario             usuarios?        @relation("MensajesSoporteUsuario", fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model respuestas_automaticas {
+  id_respuesta        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fecha_creacion      DateTime? @default(now()) @db.Timestamptz(6)
+  fecha_actualizacion DateTime? @db.Timestamptz(6)
+  eliminado           Int?      @default(-1)
+  fecha_eliminacion   DateTime? @db.Timestamptz(6)
+  palabra_clave       String?   @db.VarChar(100)
+  respuesta           String?
+  activo              Boolean?  @default(true)
+  prioridad           Int?      @default(0) // para orden de evaluación
 }
