@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Box,
   Container,
@@ -23,6 +22,9 @@ import {
   Card,
   CardContent,
   Grid,
+  CircularProgress,
+  Alert,
+  Pagination,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -32,41 +34,22 @@ import {
   PendingActions as PendingIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
-
-// Tipos temporales - luego vendrán del backend
-interface Paciente {
-  id: string;
-  nombre: string;
-  identificacion: string;
-  ultimaConsulta: string;
-  totalFacturado: number;
-  totalPagado: number;
-  saldoPendiente: number;
-}
+import { useFacturacion } from '../../hooks/useFacturacion';
 
 const Billing = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [busqueda, setBusqueda] = useState('');
-
-  // Datos mock - luego vendrán del backend
-  const pacientes: Paciente[] = [
-    {
-      id: '1',
-      nombre: 'Juan Gómez',
-      identificacion: '1234567890',
-      ultimaConsulta: '2025-11-20',
-      totalFacturado: 2500000,
-      totalPagado: 1500000,
-      saldoPendiente: 1000000,
-    },
-    // Más datos...
-  ];
-
-  const pacientesFiltrados = pacientes.filter((p) =>
-    p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-    p.identificacion.includes(busqueda)
-  );
+  
+  const {
+    resumen,
+    pacientes,
+    loading,
+    error,
+    pagina,
+    totalPaginas,
+    cambiarPagina,
+    buscar,
+  } = useFacturacion();
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('es-CO', {
@@ -75,10 +58,7 @@ const Billing = () => {
       minimumFractionDigits: 0,
     }).format(value);
 
-  // Estadísticas generales
-  const totalFacturado = pacientes.reduce((sum, p) => sum + p.totalFacturado, 0);
-  const totalPagado = pacientes.reduce((sum, p) => sum + p.totalPagado, 0);
-  const totalPendiente = pacientes.reduce((sum, p) => sum + p.saldoPendiente, 0);
+  const { totalFacturado, totalPagado, totalPendiente } = resumen;
 
   return (
     <Box component="main" sx={{ py: isMobile ? 2 : 4 }}>
@@ -166,13 +146,19 @@ const Billing = () => {
 
         <Divider sx={{ my: 3 }} />
 
+        {/* Mensaje de error */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
         {/* Buscador */}
         <Box sx={{ mb: 3 }}>
           <TextField
             fullWidth
             placeholder="Buscar por nombre o identificación..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
+            onChange={(e) => buscar(e.target.value)}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -190,103 +176,125 @@ const Billing = () => {
         </Box>
 
         {/* Tabla de pacientes */}
-        <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ bgcolor: 'primary.main' }}>
-                  <TableCell sx={{ color: 'white', fontWeight: 600 }}>
-                    Paciente
-                  </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600 }}>
-                    Identificación
-                  </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600 }}>
-                    Última Consulta
-                  </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600 }} align="right">
-                    Total Facturado
-                  </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600 }} align="right">
-                    Pagado
-                  </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600 }} align="right">
-                    Saldo Pendiente
-                  </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600 }} align="center">
-                    Acciones
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {pacientesFiltrados.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography variant="body1" color="text.secondary">
-                        No se encontraron pacientes
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  pacientesFiltrados.map((paciente) => (
-                    <TableRow
-                      key={paciente.id}
-                      hover
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                    >
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {paciente.nombre}
-                        </Typography>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress size={60} />
+          </Box>
+        ) : (
+          <>
+            <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: 'primary.main' }}>
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }}>
+                        Paciente
                       </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {paciente.identificacion}
-                        </Typography>
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }}>
+                        Identificación
                       </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(paciente.ultimaConsulta).toLocaleDateString('es-CO')}
-                        </Typography>
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }}>
+                        Última Consulta
                       </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2">
-                          {formatCurrency(paciente.totalFacturado)}
-                        </Typography>
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }} align="right">
+                        Total Facturado
                       </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" color="success.main">
-                          {formatCurrency(paciente.totalPagado)}
-                        </Typography>
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }} align="right">
+                        Pagado
                       </TableCell>
-                      <TableCell align="right">
-                        <Chip
-                          label={formatCurrency(paciente.saldoPendiente)}
-                          color={paciente.saldoPendiente > 0 ? 'warning' : 'success'}
-                          size="small"
-                          sx={{ fontWeight: 600 }}
-                        />
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }} align="right">
+                        Saldo Pendiente
                       </TableCell>
-                      <TableCell align="center">
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          title="Ver detalle"
-                          onClick={() => {
-                            // TODO: Navegar a detalle de factura
-                            console.log('Ver detalle:', paciente.id);
-                          }}
-                        >
-                          <VisibilityIcon />
-                        </IconButton>
+                      <TableCell sx={{ color: 'white', fontWeight: 600 }} align="center">
+                        Acciones
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+                  </TableHead>
+                  <TableBody>
+                    {pacientes.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                          <Typography variant="body1" color="text.secondary">
+                            No se encontraron pacientes con citas completadas
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pacientes.map((paciente) => (
+                        <TableRow
+                          key={paciente.id_paciente}
+                          hover
+                          sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                        >
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {paciente.nombre}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {paciente.identificacion}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {paciente.ultimaConsulta
+                                ? new Date(paciente.ultimaConsulta).toLocaleDateString('es-CO')
+                                : 'N/A'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2">
+                              {formatCurrency(paciente.totalFacturado)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" color="success.main">
+                              {formatCurrency(paciente.totalPagado)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Chip
+                              label={formatCurrency(paciente.saldoPendiente)}
+                              color={paciente.saldoPendiente > 0 ? 'warning' : 'success'}
+                              size="small"
+                              sx={{ fontWeight: 600 }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              title="Ver detalle"
+                              onClick={() => {
+                                console.log('Ver detalle:', paciente.id_paciente);
+                              }}
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+
+            {/* Paginación */}
+            {totalPaginas > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                <Pagination
+                  count={totalPaginas}
+                  page={pagina}
+                  onChange={(_, page) => cambiarPagina(page)}
+                  color="primary"
+                  size="large"
+                />
+              </Box>
+            )}
+          </>
+        )}
 
         {/* Botón para crear nueva factura */}
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>

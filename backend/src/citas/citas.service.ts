@@ -152,7 +152,8 @@ export class CitasService {
         hora_fin_cita: horaFin,
         motivo: createCitaDto.motivo,
         observaciones: createCitaDto.observaciones,
-        id_parametro_estado_cita: parametroRol.id_parametro
+        id_parametro_estado_cita: parametroRol.id_parametro,
+        precio_consulta: 50000
       },
     });
 

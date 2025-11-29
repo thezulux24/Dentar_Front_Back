@@ -49,6 +49,7 @@ model citas {
   motivo                   String?
   observaciones            String?
   id_tratamiento_usuario   String?        @db.Uuid
+  precio_consulta          Decimal?       @db.Decimal
   auxiliares               auxiliares?    @relation(fields: [id_auxiliar], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
   odontologos              odontologos?   @relation(fields: [id_odontologo], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
   pacientes                pacientes?     @relation(fields: [id_paciente], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
@@ -156,6 +157,7 @@ model pacientes {
   citas                  citas[]
   diagnosticos           diagnosticos[]
   historial_clinico      historial_clinico[]
+  pagos                  pagos[]
   usuarios               usuarios            @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
 }
 
@@ -166,11 +168,14 @@ model pagos {
   eliminado                                             Int?        @default(-1)
   fecha_eliminacion                                     DateTime?   @db.Timestamptz(6)
   id_cita                                               String?     @db.Uuid
+  id_paciente                                           String?     @db.Uuid
   monto                                                 Decimal?    @db.Decimal
   id_parametro_metodo_pago                              String?     @db.Uuid
   id_parametro_estado_pago                              String?     @db.Uuid
   fecha_pago                                            DateTime?   @default(now()) @db.Timestamptz(6)
+  observaciones                                         String?
   citas                                                 citas?      @relation(fields: [id_cita], references: [id_cita], onDelete: NoAction, onUpdate: NoAction)
+  pacientes                                             pacientes?  @relation(fields: [id_paciente], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
   parametros_pagos_id_parametro_estado_pagoToparametros parametros? @relation("pagos_id_parametro_estado_pagoToparametros", fields: [id_parametro_estado_pago], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
   parametros_pagos_id_parametro_metodo_pagoToparametros parametros? @relation("pagos_id_parametro_metodo_pagoToparametros", fields: [id_parametro_metodo_pago], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
 }
