@@ -165,4 +165,60 @@ export class TratamientosUsuariosService {
     // Este método es para que el paciente consulte sus propios tratamientos
     return this.findAllByPaciente(id_usuario, query);
   }
+
+  async updateEstado(id_tratamiento_usuario: string, nombre_estado: string) {
+    // Validar que el tratamiento_usuario existe
+    const tratamientoUsuario = await this.prisma.tratamientos_usuarios.findFirst({
+      where: {
+        id_tratamiento_usuario,
+        eliminado: -1,
+      },
+    });
+
+    if (!tratamientoUsuario) {
+      throw new NotFoundException('Tratamiento asignado no encontrado');
+    }
+
+    // Obtener el parámetro del nuevo estado
+    const nuevoEstado = await this.prisma.parametros.findFirst({
+      where: {
+        nombre: nombre_estado,
+        tipos_parametros: {
+          nombre: 'estado_de_tratamiento',
+        },
+        eliminado: -1,
+      },
+    });
+
+    if (!nuevoEstado) {
+      throw new NotFoundException(`Estado "${nombre_estado}" no encontrado`);
+    }
+
+    // Actualizar el estado
+    const tratamientoActualizado = await this.prisma.tratamientos_usuarios.update({
+      where: { id_tratamiento_usuario },
+      data: {
+        id_parametro_estado_tratamiento: nuevoEstado.id_parametro,
+        fecha_actualizacion: new Date(),
+      },
+      include: {
+        tratamiento: {
+          select: {
+            nombre_tratamiento: true,
+          },
+        },
+        parametros: {
+          select: {
+            nombre: true,
+          },
+        },
+      },
+    });
+
+    return buildResponse(true, 'Estado del tratamiento actualizado exitosamente', {
+      id_tratamiento_usuario: tratamientoActualizado.id_tratamiento_usuario,
+      tratamiento: tratamientoActualizado.tratamiento.nombre_tratamiento,
+      estado: tratamientoActualizado.parametros?.nombre || 'No definido',
+    });
+  }
 }

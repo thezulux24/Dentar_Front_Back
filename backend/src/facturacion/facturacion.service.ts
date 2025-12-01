@@ -24,8 +24,8 @@ export class FacturacionService {
       throw new NotFoundException('No se encontró el parámetro de estado "Completada"');
     }
 
-    // Total facturado (suma de todas las citas completadas con precio_consulta)
-    const totalFacturadoResult = await this.prisma.citas.aggregate({
+    // Total facturado de citas completadas
+    const totalFacturadoCitasResult = await this.prisma.citas.aggregate({
       where: {
         eliminado: -1,
         precio_consulta: { not: null },
@@ -35,6 +35,29 @@ export class FacturacionService {
         precio_consulta: true,
       },
     });
+
+    // Total facturado de tratamientos finalizados
+    const tratamientosCompletados = await this.prisma.tratamientos_usuarios.findMany({
+      where: {
+        eliminado: -1,
+        parametros: {
+          nombre: 'Finalizado',
+          eliminado: -1,
+        },
+      },
+      select: {
+        tratamiento: {
+          select: {
+            precio_estimado: true,
+          },
+        },
+      },
+    });
+
+    const totalFacturadoTratamientos = tratamientosCompletados.reduce(
+      (sum, tu) => sum + parseFloat(tu.tratamiento.precio_estimado?.toString() || '0'),
+      0,
+    );
 
     // Total pagado (suma de todos los pagos)
     const totalPagadoResult = await this.prisma.pagos.aggregate({
@@ -46,7 +69,8 @@ export class FacturacionService {
       },
     });
 
-    const totalFacturado = totalFacturadoResult._sum.precio_consulta || new Decimal(0);
+    const totalFacturadoCitas = totalFacturadoCitasResult._sum.precio_consulta || new Decimal(0);
+    const totalFacturado = new Decimal(totalFacturadoCitas).plus(totalFacturadoTratamientos);
     const totalPagado = totalPagadoResult._sum.monto || new Decimal(0);
     const totalPendiente = new Decimal(totalFacturado).minus(totalPagado);
 
@@ -89,24 +113,9 @@ export class FacturacionService {
       ];
     }
 
-    // Obtener total de registros
-    const total = await this.prisma.usuarios.count({
-      where: {
-        ...whereClauseUsuario,
-        pacientes: {
-          citas: {
-            some: {
-              eliminado: -1,
-              precio_consulta: { not: null },
-              id_parametro_estado_cita: estadoCompletada.id_parametro,
-            },
-          },
-        },
-      },
-    });
-
-    // Obtener pacientes con paginación
-    const usuarios = await this.prisma.usuarios.findMany({
+    // Primero obtenemos todos los usuarios que cumplen el filtro base
+    // y luego filtramos los que tienen citas o tratamientos
+    const todosUsuarios = await this.prisma.usuarios.findMany({
       where: whereClauseUsuario,
       select: {
         id_usuario: true,
@@ -141,24 +150,60 @@ export class FacturacionService {
             },
           },
         },
+        tratamientos: {
+          where: {
+            eliminado: -1,
+            parametros: {
+              nombre: 'Finalizado',
+              eliminado: -1,
+            },
+          },
+          select: {
+            id_tratamiento_usuario: true,
+            fecha_creacion: true,
+            tratamiento: {
+              select: {
+                precio_estimado: true,
+              },
+            },
+          },
+          orderBy: {
+            fecha_creacion: 'desc',
+          },
+        },
       },
-      skip: (pagina - 1) * limite,
-      take: limite,
       orderBy: {
         apellidos: 'asc',
       },
     });
 
+    // Filtrar usuarios que tengan al menos una cita o tratamiento
+    const usuariosConServicios = todosUsuarios.filter(
+      (u) => u.pacientes && (u.pacientes.citas.length > 0 || u.tratamientos.length > 0),
+    );
+
+    const total = usuariosConServicios.length;
+
+    // Aplicar paginación DESPUÉS del filtro
+    const skip = (pagina - 1) * limite;
+    const usuariosPaginados = usuariosConServicios.slice(skip, skip + limite);
+
     // Calcular facturación por paciente
-    const pacientesConFacturacion = usuarios
-      .filter((u) => u.pacientes && u.pacientes.citas.length > 0)
-      .map((usuario) => {
-        const citas = usuario.pacientes!.citas;
+    const pacientesConFacturacion = usuariosPaginados.map((usuario) => {
+      const citas = usuario.pacientes!.citas;
+      const tratamientos = usuario.tratamientos;
         
-        const totalFacturado = citas.reduce(
+        const totalFacturadoCitas = citas.reduce(
           (sum, cita) => sum + parseFloat(cita.precio_consulta?.toString() || '0'),
           0,
         );
+
+        const totalFacturadoTratamientos = tratamientos.reduce(
+          (sum, tu) => sum + parseFloat(tu.tratamiento.precio_estimado?.toString() || '0'),
+          0,
+        );
+
+        const totalFacturado = totalFacturadoCitas + totalFacturadoTratamientos;
 
         const totalPagado = citas.reduce(
           (sum, cita) =>
@@ -171,7 +216,7 @@ export class FacturacionService {
         );
 
         const saldoPendiente = totalFacturado - totalPagado;
-        const ultimaConsulta = citas[0]?.fecha_cita || null;
+        const ultimaConsulta = citas[0]?.fecha_cita || tratamientos[0]?.fecha_creacion || null;
 
         return {
           id_paciente: usuario.id_usuario,
@@ -182,7 +227,7 @@ export class FacturacionService {
           totalPagado,
           saldoPendiente,
         };
-      });
+    });
 
     return {
       data: pacientesConFacturacion,
@@ -284,6 +329,36 @@ export class FacturacionService {
             },
           },
         },
+        tratamientos: {
+          where: {
+            eliminado: -1,
+            parametros: {
+              nombre: 'Finalizado',
+              eliminado: -1,
+            },
+          },
+          select: {
+            id_tratamiento_usuario: true,
+            fecha_creacion: true,
+            fecha_actualizacion: true,
+            tratamiento: {
+              select: {
+                id_tratamiento: true,
+                nombre_tratamiento: true,
+                descripcion: true,
+                precio_estimado: true,
+              },
+            },
+            parametros: {
+              select: {
+                nombre: true,
+              },
+            },
+          },
+          orderBy: {
+            fecha_creacion: 'desc',
+          },
+        },
       },
     });
 
@@ -292,12 +367,20 @@ export class FacturacionService {
     }
 
     const citas = usuario.pacientes.citas;
+    const tratamientos = usuario.tratamientos;
 
     // Calcular totales
-    const totalFacturado = citas.reduce(
+    const totalFacturadoCitas = citas.reduce(
       (sum, cita) => sum + parseFloat(cita.precio_consulta?.toString() || '0'),
       0,
     );
+
+    const totalFacturadoTratamientos = tratamientos.reduce(
+      (sum, tu) => sum + parseFloat(tu.tratamiento.precio_estimado?.toString() || '0'),
+      0,
+    );
+
+    const totalFacturado = totalFacturadoCitas + totalFacturadoTratamientos;
 
     const totalPagado = citas.reduce(
       (sum, cita) =>
@@ -318,6 +401,7 @@ export class FacturacionService {
 
       return {
         id_cita: cita.id_cita,
+        tipo: 'cita',
         fecha: cita.fecha_cita,
         motivo: cita.motivo,
         observaciones: cita.observaciones,
@@ -339,6 +423,32 @@ export class FacturacionService {
       };
     });
 
+    // Formatear tratamientos
+    const tratamientosFormateados = tratamientos.map((tu) => {
+      const montoTratamiento = parseFloat(tu.tratamiento.precio_estimado?.toString() || '0');
+
+      return {
+        id_tratamiento_usuario: tu.id_tratamiento_usuario,
+        tipo: 'tratamiento',
+        fecha: tu.fecha_actualizacion || tu.fecha_creacion,
+        motivo: tu.tratamiento.nombre_tratamiento,
+        observaciones: tu.tratamiento.descripcion,
+        odontologo: 'N/A',
+        estado: tu.parametros?.nombre || 'Finalizado',
+        monto: montoTratamiento,
+        pagado: 0,
+        saldo: montoTratamiento,
+        pagos: [],
+      };
+    });
+
+    // Combinar citas y tratamientos, ordenar por fecha
+    const servicios = [...citasFormateadas, ...tratamientosFormateados].sort((a, b) => {
+      const fechaA = a.fecha ? new Date(a.fecha).getTime() : 0;
+      const fechaB = b.fecha ? new Date(b.fecha).getTime() : 0;
+      return fechaB - fechaA;
+    });
+
     return {
       paciente: {
         id_paciente: usuario.id_usuario,
@@ -353,6 +463,8 @@ export class FacturacionService {
         saldoPendiente,
       },
       citas: citasFormateadas,
+      tratamientos: tratamientosFormateados,
+      servicios,
     };
   }
 
