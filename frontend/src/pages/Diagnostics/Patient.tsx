@@ -134,8 +134,8 @@ const PatientPage = () => {
             );
 
             if (response.ok) {
-                const data = await response.json();
-                setPatientTreatments(data.tratamientos || []);
+                const result = await response.json();
+                setPatientTreatments(result.data?.tratamientos || []);
             }
         } catch (error) {
             console.error('Error fetching patient treatments:', error);

@@ -143,7 +143,7 @@ export class TratamientosUsuariosService {
 
     const totalPages = Math.ceil(total / pageSize);
 
-    return {
+    return buildResponse(true, 'Operación exitosa', {
       tratamientos: tratamientosUsuario.map(tu => ({
         id_asignacion: tu.id_tratamiento_usuario,
         id_tratamiento: tu.tratamiento.id_tratamiento,
@@ -158,7 +158,7 @@ export class TratamientosUsuariosService {
         pageSize,
         currentPage: pagina,
       }),
-    };
+    });
   }
 
   async findMyTratamientos(id_usuario: string, query: FindTratamientosUsuariosDto) {
