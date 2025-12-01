@@ -32,6 +32,9 @@ const decodeJWT = (token: string) => {
 
   // TEMPORAL - Cambio el nombre del rol de odontólogo para el frontend
   normalizedUser.rol = normalizedUser.rol == 'odontologo' ? 'doctor' : normalizedUser.rol
+  
+  // Normalizar administrador a admin
+  normalizedUser.rol = normalizedUser.rol == 'administrador' ? 'admin' : normalizedUser.rol
 
   return normalizedUser;
 }

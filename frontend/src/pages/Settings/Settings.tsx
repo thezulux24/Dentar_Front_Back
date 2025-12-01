@@ -62,6 +62,9 @@ const Settings = () => {
       case 'auxiliar':
         endpoint = `${import.meta.env.VITE_BACKEND_URL}/auxiliares/perfil`
         break;
+      case 'admin':
+        endpoint = `${import.meta.env.VITE_BACKEND_URL}/administradores/perfil`
+        break;
       default:
         endpoint = `${import.meta.env.VITE_BACKEND_URL}/auth/profile`
     }
@@ -131,6 +134,9 @@ const Settings = () => {
             break;
           case 'auxiliar':
             endpoint = `${import.meta.env.VITE_BACKEND_URL}/auxiliares/perfil`
+            break;
+          case 'admin':
+            endpoint = `${import.meta.env.VITE_BACKEND_URL}/administradores/perfil`
             break;
           default:
             endpoint = `${import.meta.env.VITE_BACKEND_URL}/auth/profile`
@@ -209,6 +215,16 @@ const Settings = () => {
           "apellidos": datosEditados.apellidos,
           "informacion_personal": datosEditados.informacion_personal,
           "fecha_de_nacimiento": datosEditados.fecha_de_nacimiento,
+          "telefono": datosEditados.telefono,
+          "direccion": datosEditados.direccion,
+          "identificacion": datosEditados.identificacion,
+        }
+        break;
+      case 'admin':
+        endpoint = `${import.meta.env.VITE_BACKEND_URL}/administradores`
+        updateData = {
+          "nombres": datosEditados.nombres,
+          "apellidos": datosEditados.apellidos,
           "telefono": datosEditados.telefono,
           "direccion": datosEditados.direccion,
           "identificacion": datosEditados.identificacion,

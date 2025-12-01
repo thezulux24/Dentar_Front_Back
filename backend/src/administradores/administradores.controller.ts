@@ -24,6 +24,13 @@ export class AdministradoresController {
   }
 
   @Roles(Role.Admin)
+  @Get('perfil')
+  @ApiOperation({ summary: 'Obtener el perfil del administrador autenticado' })
+  async getPerfil(@Request() req) {
+    return this.administradoresService.findOne(req.user.id);
+  }
+
+  @Roles(Role.Admin)
   @Patch()
   @ApiOperation({
     summary: 'Actualizar la información del administrador autenticado',

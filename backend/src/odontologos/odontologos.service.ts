@@ -69,11 +69,13 @@ export class OdontologosService {
           id_usuario: true,
           especialidad: true,
           sede: true,
+          eliminado: true,
           usuarios: {
             select: {
               nombres: true,
               apellidos: true,
               email_: true,
+              telefono: true,
               identificacion: true,
               avatar_url: true,
             },
@@ -96,10 +98,12 @@ export class OdontologosService {
         nombres: o.usuarios.nombres,
         apellidos: o.usuarios.apellidos,
         correo: o.usuarios.email_,
+        telefono: o.usuarios.telefono,
         identificacion: o.usuarios.identificacion,
         foto_de_perfil: o.usuarios.avatar_url,
         especialidad: o.especialidad,
         sede: o.sede,
+        eliminado: o.eliminado,
       })),
       ...renamePagination({
         total,

@@ -19,7 +19,7 @@ export class AdministradoresService {
 
     if (existe) throw new ConflictException('El correo ya está registrado');
 
-    // 1. Obtener id del parámetro "Paciente" dentro del tipo "Rol de Usuario"
+    // 1. Obtener id del parámetro "Administrador" dentro del tipo "Rol de Usuario"
     const parametroRol = await this.prisma.parametros.findFirst({
       where: {
         nombre: 'Administrador',
@@ -37,17 +37,29 @@ export class AdministradoresService {
     // 2. Encriptar clave
     const hashed = await bcrypt.hash(data.clave, 10);
 
-    // 3. Crear usuario y administrador en transacción
-    const fechaCreacion = DateHelper.nowUTC(); // Fecha única para ambas tablas
+    // 3. Preparar datos del usuario con campos opcionales
+    const fechaCreacion = DateHelper.nowUTC();
+    const usuarioData: any = {
+      email_: email,
+      usuario: email,
+      clave: hashed,
+      id_parametro_rol: parametroRol.id_parametro,
+      fecha_creacion: fechaCreacion,
+    };
+
+    // Agregar campos opcionales solo si están presentes
+    if (data.nombres) usuarioData.nombres = data.nombres;
+    if (data.apellidos) usuarioData.apellidos = data.apellidos;
+    if (data.telefono) usuarioData.telefono = data.telefono;
+    if (data.direccion) usuarioData.direccion = data.direccion;
+    if (data.fecha_de_nacimiento) usuarioData.fecha_de_nacimiento = new Date(data.fecha_de_nacimiento);
+    if (data.identificacion) usuarioData.identificacion = data.identificacion;
+    if (data.informacion_personal) usuarioData.informacion_personal = data.informacion_personal;
+
+    // 4. Crear usuario y administrador en transacción
     const [usuario, administrador] = await this.prisma.$transaction(async (tx) => {
       const usuario = await tx.usuarios.create({
-        data: {
-          email_: email,
-          usuario: email,
-          clave: hashed,
-          id_parametro_rol: parametroRol.id_parametro,
-          fecha_creacion: fechaCreacion,
-        },
+        data: usuarioData,
       });
 
       const administrador = await tx.administradores.create({
@@ -67,35 +79,39 @@ export class AdministradoresService {
     return this.prisma.administradores.findMany();
   }
   
-  async findOne(email: string) {
-    const admin = await this.prisma.usuarios.findUnique({
-      where: { email_: email },
-      // include: {
-      //   parametros: {
-      //     select: {
-      //       nombre: true, // Seleccionar solo el nombre del parámetro
-      //     },
-      //   } // Incluir rol del usuario
-      // }
+  async findOne(id: string) {
+    const admin = await this.prisma.administradores.findUnique({
+      where: { id_usuario: id },
+      select: {
+        id_parametro_tipo_admin: true,
+        usuarios: {
+          select: {
+            email_: true,
+            nombres: true,
+            apellidos: true,
+            identificacion: true,
+            direccion: true,
+            telefono: true,
+            avatar_url: true,
+            fecha_de_nacimiento: true,
+          },
+        },
+      },
     });
 
     if (!admin) {
-      throw new Error('Paciente no encontrado');
+      throw new NotFoundException('Administrador no encontrado');
     }
 
-    // Busco el nombre del rol del adminstrador
-    const rol = await this.prisma.parametros.findUnique({
-      where: { id_parametro: admin.id_parametro_rol || '' },
-      select: { nombre: true } // Seleccionar solo el nombre del parámetro  
-    })
-
-    // Agrego el nombre del rol al paciente
-    const admin_data = {
-      ...admin,  
-      nombre_rol: rol?.nombre || 'Desconocido' // Asignar nombre del rol o 'Desconocido' si no se encuentra
+    // Aplanar estructura
+    const { usuarios, ...rest } = admin;
+    const result = {
+      ...rest,
+      ...usuarios,
+      correo: usuarios.email_,
     };
 
-    return admin_data;
+    return buildResponse(true, 'Perfil de administrador obtenido exitosamente', result);
   }
   
   async update(id: string, updateAdministradoresDto: UpdateAdministradoresDto) {

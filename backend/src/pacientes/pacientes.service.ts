@@ -63,11 +63,13 @@ export class PacientesService {
           id_usuario: true,
           alergias: true,
           ocupacion: true,
+          eliminado: true,
           usuarios: {
             select: {
               nombres: true,
               apellidos: true,
               email_: true,
+              telefono: true,
               fecha_de_nacimiento: true,
               avatar_url: true,
               identificacion: true,
@@ -103,11 +105,13 @@ export class PacientesService {
         apellidos: p.usuarios.apellidos,
         foto_de_perfil: p.usuarios.avatar_url,
         correo: p.usuarios.email_,
+        telefono: p.usuarios.telefono,
         fecha_nacimiento: p.usuarios.fecha_de_nacimiento,
         alergias: p.alergias,
         ocupacion: p.ocupacion,
         identificacion: p.usuarios.identificacion,
         direccion: p.usuarios.direccion,
+        eliminado: p.eliminado,
         fecha_ultima_cita: p.citas.length > 0 && p.citas[0].fecha_cita ? DateHelper.toTimezone(p.citas[0].fecha_cita).toISODate() : null,
       })),
       ...renamePagination({

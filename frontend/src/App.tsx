@@ -5,7 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { MainLayout, PublicLayout, PageAnimation, AlertSystem, AuthLoader, PrivateRoute } from "./components/imports";
 
 //Pages
-import { NotFound, Login, Home, Calendar, CalendarPatient, Register, Support, Dashboard, Resources, Diagnostics, NewPatient, PatientPage, Settings, DashboardPatient, IframePage, IframePage2, IframePage3, Billing, Payment} from "./pages/imports";
+import { NotFound, Login, Home, Calendar, CalendarPatient, Register, Support, Dashboard, AdminDashboard, Resources, Diagnostics, NewPatient, PatientPage, Settings, DashboardPatient, IframePage, IframePage2, IframePage3, Billing, Payment, Administration} from "./pages/imports";
 
 
 function App() {
@@ -69,6 +69,20 @@ function App() {
           <Route path="diagnosticos/:patientId" element={<PageAnimation key="aptientauxiliar"><PatientPage /></PageAnimation>} />
           <Route path="facturacion" element={<PageAnimation key="facturacionauxiliar"><Billing /></PageAnimation>} />
           <Route path="configuracion" element={<PageAnimation key="configauxiliar"><Settings /></PageAnimation>} />
+        </Route>
+
+        {/* Rutas del administrador*/}
+        <Route path="/admin" element={<AuthLoader><PrivateRoute> <MainLayout /> </PrivateRoute></AuthLoader>}>
+          <Route path="inicio" element={<PageAnimation key="inicioadmin"><AdminDashboard/></PageAnimation>} />
+          <Route path="calendario" element={<PageAnimation key="calendarioadmin"> <Calendar /> </PageAnimation>} />
+          <Route path="soporte" element={<PageAnimation key="supportadmin"><Support /></PageAnimation>} />
+          <Route path="recursos" element={<PageAnimation key="recursosadmin"><Resources /></PageAnimation>} />
+          <Route path="diagnosticos" element={<PageAnimation key="diagnosticosadmin"><Diagnostics /></PageAnimation>} />
+          <Route path="diagnosticos/nuevo" element={<PageAnimation key="newdiagadmin"><NewPatient /></PageAnimation>} />
+          <Route path="diagnosticos/:patientId" element={<PageAnimation key="aptientadmin"><PatientPage /></PageAnimation>} />
+          <Route path="facturacion" element={<PageAnimation key="facturacionadmin"><Billing /></PageAnimation>} />
+          <Route path="administracion" element={<PageAnimation key="administracionadmin"><Administration /></PageAnimation>} />
+          <Route path="configuracion" element={<PageAnimation key="configadmin"><Settings /></PageAnimation>} />
         </Route>
 
         {/* Ruta por defecto para 404 */}

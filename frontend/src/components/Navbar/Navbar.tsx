@@ -7,7 +7,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import DescriptionIcon from '@mui/icons-material/Description'; */
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-//import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsIcon from '@mui/icons-material/Settings';
 import MenuIcon from '@mui/icons-material/Menu'
 import { useTheme } from '@mui/material/styles';
 import useAuthStore from '../../store/authStore'; //**********************************************  PROVISIONAL */
@@ -26,7 +26,8 @@ const navItems = [
     { label: 'Calendario', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/calendar.svg`} alt="Calendar" />, path: 'calendario' },
     { label: 'Pacientes', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/patients.svg`} alt="Patients" />, path: 'diagnosticos' },
     { label: 'Pagos', icon: <ReceiptIcon />, path: 'pagos', roles: ['paciente'] }, // Solo paciente
-    { label: 'Facturación', icon: <ReceiptIcon />, path: 'facturacion', roles: ['auxiliar'] }, // Solo auxiliar
+    { label: 'Facturación', icon: <ReceiptIcon />, path: 'facturacion', roles: ['auxiliar', 'admin'] }, // Auxiliar y Admin
+    { label: 'Administración', icon: <SettingsIcon />, path: 'administracion', roles: ['admin'] }, // Solo admin
     { label: 'Recursos', icon: <CustomIcon src={`${import.meta.env.BASE_URL}icons/resources.svg`} alt="Resources" />, path: 'recursos' },
     { label: 'Soporte', icon: <HelpOutlineIcon />, path: 'soporte' },
     //{ label: 'Configuración', icon: <SettingsIcon />, to: '/doctor/configuracion' },

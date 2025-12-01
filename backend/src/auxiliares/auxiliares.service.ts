@@ -33,27 +33,41 @@ export class AuxiliaresService {
   }
 
   async findAll() {
-    const users = await this.prisma.auxiliares.findMany({
+    const auxiliares = await this.prisma.auxiliares.findMany({
+      where: {
+        eliminado: -1, // Solo activos
+      },
       select: {
+        id_usuario: true,
+        eliminado: true,
         usuarios: {
           select: {
             nombres: true,
             apellidos: true,
+            email_: true,
+            identificacion: true,
+            telefono: true,
             avatar_url: true,
           }
         },
-        id_usuario: true,
-      }
+      },
+      orderBy: {
+        fecha_creacion: 'desc',
+      },
     });
 
-    const odontologos = users.map(user => ({
-      id: user.id_usuario,
-      nombres: user.usuarios.nombres,
-      apellidos: user.usuarios.apellidos,
-      avatar_url: user.usuarios.avatar_url,
+    const auxiliaresList = auxiliares.map(aux => ({
+      id_usuario: aux.id_usuario,
+      nombres: aux.usuarios.nombres,
+      apellidos: aux.usuarios.apellidos,
+      email_: aux.usuarios.email_,
+      identificacion: aux.usuarios.identificacion,
+      telefono: aux.usuarios.telefono,
+      avatar_url: aux.usuarios.avatar_url,
+      eliminado: aux.eliminado,
     }));
 
-    return buildResponse(true, 'Lista de auxiliares', { odontologos });
+    return buildResponse(true, 'Lista de auxiliares', auxiliaresList);
   }
 
   async findOne(id: string) {

@@ -121,6 +121,8 @@ const Login: React.FC = () => {
         navigate("/auxiliar/inicio"); 
       }else if (rol === "paciente") {
         navigate("/paciente/inicio");
+      }else if (rol === "admin") {
+        navigate("/admin/inicio");
       }else {
         openAlert("Rol de usuario no reconocido", "error");
       }
