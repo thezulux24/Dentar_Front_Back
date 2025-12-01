@@ -8,6 +8,10 @@ import {
     Button,
     Paper,
     Divider,
+    Card,
+    CardMedia,
+    CardContent,
+    Chip,
     // CircularProgress // Import CircularProgress for the spinner
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -17,6 +21,7 @@ import useFetch, { FetchResponse } from '../../hooks/useFetch';
 import useAuthStore from '../../store/authStore';
 import useUIStore from '../../store/uiStore';
 import Loader from '../../components/Loader/Loader'; // Assuming a Loader component exists
+import AddTreatmentsModal from '../../components/AddTreatmentsModal/AddTreatmentsModal';
 
 const excludedKeys = ['nombres', 'apellidos', 'notas']; // These are nested keys, will be handled by the filter.
 
@@ -66,6 +71,9 @@ const PatientPage = () => {
     const { patientId } = useParams<{ patientId: string }>();
     const [formData, setFormData] = useState<any>(dataFormTemplate);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [patientTreatments, setPatientTreatments] = useState<any[]>([]);
+    const [loadingTreatments, setLoadingTreatments] = useState(false);
 
     const { fetchData } = useFetch<FetchResponse>();
     const { token, user } = useAuthStore();
@@ -110,6 +118,41 @@ const PatientPage = () => {
 
         fetchPatientData();
     }, [patientId, token, fetchData, openAlert]);
+
+    const fetchPatientTreatments = async () => {
+        if (!patientId) return;
+
+        try {
+            setLoadingTreatments(true);
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/tratamientos-usuarios/paciente/${patientId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                setPatientTreatments(data.tratamientos || []);
+            }
+        } catch (error) {
+            console.error('Error fetching patient treatments:', error);
+        } finally {
+            setLoadingTreatments(false);
+        }
+    };
+
+    const handleTreatmentsAdded = () => {
+        fetchPatientTreatments();
+    };
+
+    useEffect(() => {
+        if (patientId) {
+            fetchPatientTreatments();
+        }
+    }, [patientId]);
 
     if (loading) {
         return (
@@ -159,7 +202,7 @@ const PatientPage = () => {
                     <Grid size={{ xs: 12, sm: 4 }} textAlign="right">
                         <Button
                             variant="contained"
-                            
+                            onClick={() => setIsModalOpen(true)}
                             startIcon={<AddIcon />}
                         >
                             Agregar Tratamientos
@@ -175,6 +218,88 @@ const PatientPage = () => {
                     </Typography>
                 </Box>
 
+                <Divider sx={{ my: 2 }} />
+
+                {/* Tratamientos Asignados */}
+                <Box sx={{ mt: 3, mb: 3 }}>
+                    <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+                        Tratamientos Asignados
+                    </Typography>
+                    
+                    {loadingTreatments ? (
+                        <Box display="flex" justifyContent="center" py={3}>
+                            <Loader />
+                        </Box>
+                    ) : patientTreatments.length === 0 ? (
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                            No hay tratamientos asignados a este paciente
+                        </Typography>
+                    ) : (
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: 'repeat(2, 1fr)',
+                                    md: 'repeat(3, 1fr)',
+                                },
+                                gap: 2,
+                                mt: 2,
+                            }}
+                        >
+                            {patientTreatments.map((treatment) => (
+                                <Card
+                                    key={treatment.id_asignacion}
+                                    sx={{
+                                        height: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                >
+                                    <CardMedia
+                                        component="img"
+                                        height="140"
+                                        image={
+                                            treatment.imagen_url ||
+                                            'https://doctororal.com/assets/img/about.jpg'
+                                        }
+                                        alt={treatment.nombre}
+                                    />
+                                    <CardContent sx={{ flex: 1 }}>
+                                        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                                            {treatment.nombre}
+                                        </Typography>
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                            sx={{
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: 'vertical',
+                                                overflow: 'hidden',
+                                                mb: 1,
+                                            }}
+                                        >
+                                            {treatment.descripcion}
+                                        </Typography>
+                                        <Chip
+                                            label={treatment.estado || 'En progreso'}
+                                            size="small"
+                                            color={
+                                                treatment.estado === 'Completado'
+                                                    ? 'success'
+                                                    : treatment.estado === 'En progreso'
+                                                    ? 'primary'
+                                                    : 'default'
+                                            }
+                                            sx={{ mt: 1 }}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </Box>
+                    )}
+                </Box>
 
                 <Divider sx={{ my: 2 }} />
 
@@ -238,7 +363,13 @@ const PatientPage = () => {
 
             </Paper>
 
-
+            {/* Modal para agregar tratamientos */}
+            <AddTreatmentsModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                patientId={patientId || ''}
+                onTreatmentsAdded={handleTreatmentsAdded}
+            />
         </Box>
     );
 };
