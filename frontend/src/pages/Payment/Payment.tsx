@@ -28,6 +28,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress,
 } from '@mui/material';
 import {
   Payment as PaymentIcon,
@@ -38,73 +39,45 @@ import {
   Receipt as ReceiptIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
+import { usePagos } from '../../hooks/usePagos';
 
-// Tipos según la base de datos
-interface CitaPendiente {
-  id_cita: string;
-  fecha_cita: string;
-  motivo: string;
-  nombre_tratamiento: string;
-  odontologo: string;
-  monto: number;
-  estado_pago: string;
-  seleccionada: boolean;
-}
+const iconosPago: Record<string, React.ReactElement> = {
+  Efectivo: <CashIcon />,
+  Tarjeta: <CardIcon />,
+  PSE: <BankIcon />,
+  Transferencia: <BankIcon />,
+  Financiado: <CashIcon />,
+};
 
-// Métodos de pago disponibles (vendrán de parametros en el backend)
-const metodosPago = [
-  { id: 'efectivo', nombre: 'Efectivo', icon: <CashIcon />, color: '#4caf50' },
-  { id: 'tarjeta', nombre: 'Tarjeta Débito/Crédito', icon: <CardIcon />, color: '#2196f3' },
-  { id: 'pse', nombre: 'PSE', icon: <BankIcon />, color: '#ff9800' },
-  { id: 'transferencia', nombre: 'Transferencia Bancaria', icon: <BankIcon />, color: '#9c27b0' },
-];
+const coloresPago: Record<string, string> = {
+  Efectivo: '#4caf50',
+  Tarjeta: '#2196f3',
+  PSE: '#ff9800',
+  Transferencia: '#9c27b0',
+  Financiado: '#607d8b',
+};
 
 const Payment = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Estado del componente
-  const [citasPendientes, setCitasPendientes] = useState<CitaPendiente[]>([
-    // Mock data - vendrá del backend
-    {
-      id_cita: '1',
-      fecha_cita: '2025-11-15',
-      motivo: 'Limpieza dental',
-      nombre_tratamiento: 'Profilaxis',
-      odontologo: 'Dr. Carlos Martínez',
-      monto: 150000,
-      estado_pago: 'pendiente',
-      seleccionada: false,
-    },
-    {
-      id_cita: '2',
-      fecha_cita: '2025-11-20',
-      motivo: 'Ortodoncia - Control',
-      nombre_tratamiento: 'Ortodoncia',
-      odontologo: 'Dra. Ana López',
-      monto: 200000,
-      estado_pago: 'pendiente',
-      seleccionada: false,
-    },
-    {
-      id_cita: '3',
-      fecha_cita: '2025-11-22',
-      motivo: 'Resina dental',
-      nombre_tratamiento: 'Resina',
-      odontologo: 'Dr. Carlos Martínez',
-      monto: 180000,
-      estado_pago: 'pendiente',
-      seleccionada: false,
-    },
-  ]);
+  const {
+    citasPendientes,
+    metodosPago,
+    loading,
+    error,
+    registrarPago,
+  } = usePagos();
 
+  const [citasSeleccionadas, setCitasSeleccionadas] = useState<string[]>([]);
   const [metodoPago, setMetodoPago] = useState('');
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [pagoExitoso, setPagoExitoso] = useState(false);
+  const [procesandoPago, setProcesandoPago] = useState(false);
 
-  // Calcular totales
-  const citasSeleccionadas = citasPendientes.filter((c) => c.seleccionada);
-  const totalAPagar = citasSeleccionadas.reduce((sum, c) => sum + c.monto, 0);
+  const totalAPagar = citasPendientes
+    .filter((c) => citasSeleccionadas.includes(c.id_cita))
+    .reduce((sum, c) => sum + c.saldo_pendiente, 0);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('es-CO', {
@@ -114,18 +87,19 @@ const Payment = () => {
     }).format(value);
 
   const handleToggleCita = (id_cita: string) => {
-    setCitasPendientes((prev) =>
-      prev.map((c) =>
-        c.id_cita === id_cita ? { ...c, seleccionada: !c.seleccionada } : c
-      )
+    setCitasSeleccionadas((prev) =>
+      prev.includes(id_cita)
+        ? prev.filter((id) => id !== id_cita)
+        : [...prev, id_cita]
     );
   };
 
   const handleSelectAll = () => {
-    const todasSeleccionadas = citasPendientes.every((c) => c.seleccionada);
-    setCitasPendientes((prev) =>
-      prev.map((c) => ({ ...c, seleccionada: !todasSeleccionadas }))
-    );
+    if (citasSeleccionadas.length === citasPendientes.length) {
+      setCitasSeleccionadas([]);
+    } else {
+      setCitasSeleccionadas(citasPendientes.map((c) => c.id_cita));
+    }
   };
 
   const handleProcesarPago = () => {
@@ -141,35 +115,31 @@ const Payment = () => {
     setOpenConfirmDialog(true);
   };
 
-  const handleConfirmarPago = () => {
-    // Simular procesamiento de pago
-    const pagoData = {
-      citas: citasSeleccionadas.map((c) => ({
-        id_cita: c.id_cita,
-        monto: c.monto,
-      })),
-      metodo_pago: metodoPago,
-      total: totalAPagar,
-      fecha_pago: new Date().toISOString(),
-    };
+  const handleConfirmarPago = async () => {
+    setProcesandoPago(true);
 
-    console.log('Procesando pago:', pagoData);
+    const resultado = await registrarPago(
+      citasSeleccionadas,
+      metodoPago,
+      'Pago realizado desde portal del paciente'
+    );
 
-    // Simular éxito
-    setTimeout(() => {
+    setProcesandoPago(false);
+
+    if (resultado.success) {
       setOpenConfirmDialog(false);
       setPagoExitoso(true);
+      setCitasSeleccionadas([]);
+      setMetodoPago('');
 
-      // Limpiar selección después de 3 segundos
+      // Ocultar mensaje de éxito después de 5 segundos
       setTimeout(() => {
-        setCitasPendientes((prev) =>
-          prev.filter((c) => !c.seleccionada)
-        );
-        setMetodoPago('');
         setPagoExitoso(false);
-      }, 3000);
-    }, 1500);
+      }, 5000);
+    }
   };
+
+  const metodoSeleccionado = metodosPago.find((m) => m.id_parametro === metodoPago);
 
   return (
     <Box component="main" sx={{ py: isMobile ? 2 : 4, minHeight: '100vh', bgcolor: '#f5f5f5' }}>
@@ -211,221 +181,241 @@ const Payment = () => {
           </Alert>
         )}
 
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-          {/* Panel izquierdo - Citas pendientes */}
-          <Box sx={{ flex: { md: '1 1 58%' } }}>
-            <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-              <Box sx={{ bgcolor: 'primary.main', p: 2 }}>
-                <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-                  Citas Pendientes de Pago
-                </Typography>
-              </Box>
+        {/* Alerta de error */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            {error}
+          </Alert>
+        )}
 
-              <Box sx={{ p: 2 }}>
-                {citasPendientes.length === 0 ? (
-                  <Box sx={{ textAlign: 'center', py: 6 }}>
-                    <CheckIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary">
-                      ¡No tienes pagos pendientes!
-                    </Typography>
-                  </Box>
-                ) : (
-                  <>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Button
-                        size="small"
-                        onClick={handleSelectAll}
-                        sx={{ textTransform: 'none' }}
-                      >
-                        {citasPendientes.every((c) => c.seleccionada)
-                          ? 'Deseleccionar todo'
-                          : 'Seleccionar todo'}
-                      </Button>
-                      <Chip
-                        label={`${citasSeleccionadas.length} de ${citasPendientes.length} seleccionadas`}
-                        color="primary"
-                        size="small"
-                      />
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress size={60} />
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+            {/* Panel izquierdo - Citas pendientes */}
+            <Box sx={{ flex: { md: '1 1 58%' } }}>
+              <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                <Box sx={{ bgcolor: 'primary.main', p: 2 }}>
+                  <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                    Citas Pendientes de Pago
+                  </Typography>
+                </Box>
+
+                <Box sx={{ p: 2 }}>
+                  {citasPendientes.length === 0 ? (
+                    <Box sx={{ textAlign: 'center', py: 6 }}>
+                      <CheckIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
+                      <Typography variant="h6" color="text.secondary">
+                        ¡No tienes pagos pendientes!
+                      </Typography>
                     </Box>
+                  ) : (
+                    <>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                        <Button
+                          size="small"
+                          onClick={handleSelectAll}
+                          sx={{ textTransform: 'none' }}
+                        >
+                          {citasSeleccionadas.length === citasPendientes.length
+                            ? 'Deseleccionar todo'
+                            : 'Seleccionar todo'}
+                        </Button>
+                        <Chip
+                          label={`${citasSeleccionadas.length} de ${citasPendientes.length} seleccionadas`}
+                          color="primary"
+                          size="small"
+                        />
+                      </Box>
 
-                    <TableContainer>
-                      <Table size="small">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell padding="checkbox"></TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Tratamiento</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Odontólogo</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }} align="right">
-                              Monto
-                            </TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {citasPendientes.map((cita) => (
-                            <TableRow
-                              key={cita.id_cita}
-                              hover
-                              onClick={() => handleToggleCita(cita.id_cita)}
-                              sx={{
-                                cursor: 'pointer',
-                                bgcolor: cita.seleccionada ? 'action.selected' : 'inherit',
-                              }}
-                            >
-                              <TableCell padding="checkbox">
-                                <Checkbox checked={cita.seleccionada} />
-                              </TableCell>
-                              <TableCell>
-                                <Typography variant="body2">
-                                  {new Date(cita.fecha_cita).toLocaleDateString('es-CO')}
-                                </Typography>
-                              </TableCell>
-                              <TableCell>
-                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                  {cita.nombre_tratamiento}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {cita.motivo}
-                                </Typography>
-                              </TableCell>
-                              <TableCell>
-                                <Typography variant="body2" color="text.secondary">
-                                  {cita.odontologo}
-                                </Typography>
-                              </TableCell>
-                              <TableCell align="right">
-                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                  {formatCurrency(cita.monto)}
-                                </Typography>
+                      <TableContainer>
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell padding="checkbox"></TableCell>
+                              <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
+                              <TableCell sx={{ fontWeight: 600 }}>Tratamiento</TableCell>
+                              <TableCell sx={{ fontWeight: 600 }}>Odontólogo</TableCell>
+                              <TableCell sx={{ fontWeight: 600 }} align="right">
+                                Saldo Pendiente
                               </TableCell>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </>
-                )}
-              </Box>
-            </Paper>
-          </Box>
-
-          {/* Panel derecho - Método de pago */}
-          <Box sx={{ flex: { md: '1 1 42%' } }}>
-            <Stack spacing={3}>
-              {/* Resumen */}
-              <Card elevation={2} sx={{ borderRadius: 2 }}>
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                    Resumen de Pago
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-
-                  <Stack spacing={1.5}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Citas seleccionadas:
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {citasSeleccionadas.length}
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        Total a pagar:
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        sx={{ fontWeight: 700, color: 'primary.main' }}
-                      >
-                        {formatCurrency(totalAPagar)}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-
-              {/* Método de pago */}
-              <Paper elevation={2} sx={{ borderRadius: 2, p: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                  Método de Pago
-                </Typography>
-
-                <FormControl component="fieldset" fullWidth>
-                  <RadioGroup
-                    value={metodoPago}
-                    onChange={(e) => setMetodoPago(e.target.value)}
-                  >
-                    <Stack spacing={1.5}>
-                      {metodosPago.map((metodo) => (
-                        <Paper
-                          key={metodo.id}
-                          elevation={metodoPago === metodo.id ? 3 : 1}
-                          sx={{
-                            p: 2,
-                            cursor: 'pointer',
-                            border: 2,
-                            borderColor:
-                              metodoPago === metodo.id ? metodo.color : 'transparent',
-                            transition: 'all 0.2s',
-                            '&:hover': {
-                              borderColor: metodo.color,
-                              transform: 'translateY(-2px)',
-                            },
-                          }}
-                          onClick={() => setMetodoPago(metodo.id)}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Radio value={metodo.id} />
-                            <Avatar sx={{ bgcolor: metodo.color }}>
-                              {metodo.icon}
-                            </Avatar>
-                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                              {metodo.nombre}
-                            </Typography>
-                          </Box>
-                        </Paper>
-                      ))}
-                    </Stack>
-                  </RadioGroup>
-                </FormControl>
+                          </TableHead>
+                          <TableBody>
+                            {citasPendientes.map((cita) => (
+                              <TableRow
+                                key={cita.id_cita}
+                                hover
+                                onClick={() => handleToggleCita(cita.id_cita)}
+                                sx={{
+                                  cursor: 'pointer',
+                                  bgcolor: citasSeleccionadas.includes(cita.id_cita)
+                                    ? 'action.selected'
+                                    : 'inherit',
+                                }}
+                              >
+                                <TableCell padding="checkbox">
+                                  <Checkbox
+                                    checked={citasSeleccionadas.includes(cita.id_cita)}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2">
+                                    {new Date(cita.fecha_cita).toLocaleDateString('es-CO')}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    {cita.nombre_tratamiento}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {cita.motivo}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {cita.odontologo}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell align="right">
+                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    {formatCurrency(cita.saldo_pendiente)}
+                                  </Typography>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </>
+                  )}
+                </Box>
               </Paper>
+            </Box>
 
-              {/* Botón de pago */}
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                disabled={citasSeleccionadas.length === 0 || !metodoPago}
-                onClick={handleProcesarPago}
-                startIcon={<PaymentIcon />}
-                sx={{
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  borderRadius: 2,
-                  textTransform: 'none',
-                }}
-              >
-                Procesar Pago - {formatCurrency(totalAPagar)}
-              </Button>
+            {/* Panel derecho - Método de pago */}
+            <Box sx={{ flex: { md: '1 1 42%' } }}>
+              <Stack spacing={3}>
+                {/* Resumen */}
+                <Card elevation={2} sx={{ borderRadius: 2 }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                      Resumen de Pago
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
 
-              {citasSeleccionadas.length === 0 && (
-                <Alert severity="warning" icon={<WarningIcon />}>
-                  <Typography variant="caption">
-                    Selecciona al menos una cita para continuar
+                    <Stack spacing={1.5}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Citas seleccionadas:
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {citasSeleccionadas.length}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          Total a pagar:
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 700, color: 'primary.main' }}
+                        >
+                          {formatCurrency(totalAPagar)}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </CardContent>
+                </Card>
+
+                {/* Método de pago */}
+                <Paper elevation={2} sx={{ borderRadius: 2, p: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                    Método de Pago
                   </Typography>
-                </Alert>
-              )}
-            </Stack>
+
+                  <FormControl component="fieldset" fullWidth>
+                    <RadioGroup
+                      value={metodoPago}
+                      onChange={(e) => setMetodoPago(e.target.value)}
+                    >
+                      <Stack spacing={1.5}>
+                        {metodosPago.map((metodo) => {
+                          const color = coloresPago[metodo.nombre] || '#757575';
+                          const icon = iconosPago[metodo.nombre] || <CashIcon />;
+                          
+                          return (
+                            <Paper
+                              key={metodo.id_parametro}
+                              elevation={metodoPago === metodo.id_parametro ? 3 : 1}
+                              sx={{
+                                p: 2,
+                                cursor: 'pointer',
+                                border: 2,
+                                borderColor:
+                                  metodoPago === metodo.id_parametro ? color : 'transparent',
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                  borderColor: color,
+                                  transform: 'translateY(-2px)',
+                                },
+                              }}
+                              onClick={() => setMetodoPago(metodo.id_parametro)}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Radio value={metodo.id_parametro} />
+                                <Avatar sx={{ bgcolor: color }}>{icon}</Avatar>
+                                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                  {metodo.nombre}
+                                </Typography>
+                              </Box>
+                            </Paper>
+                          );
+                        })}
+                      </Stack>
+                    </RadioGroup>
+                  </FormControl>
+                </Paper>
+
+                {/* Botón de pago */}
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  disabled={citasSeleccionadas.length === 0 || !metodoPago}
+                  onClick={handleProcesarPago}
+                  startIcon={<PaymentIcon />}
+                  sx={{
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                  }}
+                >
+                  Procesar Pago - {formatCurrency(totalAPagar)}
+                </Button>
+
+                {citasSeleccionadas.length === 0 && (
+                  <Alert severity="warning" icon={<WarningIcon />}>
+                    <Typography variant="caption">
+                      Selecciona al menos una cita para continuar
+                    </Typography>
+                  </Alert>
+                )}
+              </Stack>
+            </Box>
           </Box>
-        </Box>
+        )}
       </Container>
 
       {/* Dialog de confirmación */}
       <Dialog
         open={openConfirmDialog}
-        onClose={() => setOpenConfirmDialog(false)}
+        onClose={() => !procesandoPago && setOpenConfirmDialog(false)}
         maxWidth="sm"
         fullWidth
       >
@@ -450,7 +440,7 @@ const Payment = () => {
                 Método de pago:
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 600, mb: 2 }}>
-                {metodosPago.find((m) => m.id === metodoPago)?.nombre}
+                {metodoSeleccionado?.nombre || 'N/A'}
               </Typography>
 
               <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -480,6 +470,7 @@ const Payment = () => {
           <Button
             onClick={() => setOpenConfirmDialog(false)}
             variant="outlined"
+            disabled={procesandoPago}
             sx={{ textTransform: 'none' }}
           >
             Cancelar
@@ -487,10 +478,11 @@ const Payment = () => {
           <Button
             onClick={handleConfirmarPago}
             variant="contained"
+            disabled={procesandoPago}
             autoFocus
             sx={{ textTransform: 'none' }}
           >
-            Confirmar Pago
+            {procesandoPago ? <CircularProgress size={24} /> : 'Confirmar Pago'}
           </Button>
         </DialogActions>
       </Dialog>

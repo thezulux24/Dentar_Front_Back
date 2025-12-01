@@ -31,8 +31,8 @@ function useFetch<T>(): FetchResult<T> {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchData = useCallback(async (userOptions: FetchOptions) => {
-    // Cancelar petición anterior si existe
-    if (abortControllerRef.current) {
+    // Solo cancelar petición anterior si NO es GET (para evitar cancelar cargas iniciales)
+    if (abortControllerRef.current && userOptions.method !== 'GET') {
       abortControllerRef.current.abort();
     }
     const controller = new AbortController();
