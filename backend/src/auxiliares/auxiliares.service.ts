@@ -59,8 +59,21 @@ export class AuxiliaresService {
   async findOne(id: string) {
     const auxiliar = await this.prisma.auxiliares.findUnique({
       where: { id_usuario: id },
-      include: {
-        usuarios: true,
+      select: {
+        id_parametro_tipo_auxiliar: true,
+        usuarios: {
+          select: {
+            email_: true,
+            nombres: true,
+            apellidos: true,
+            identificacion: true,
+            direccion: true,
+            telefono: true,
+            avatar_url: true,
+            fecha_de_nacimiento: true,
+            informacion_personal: true,
+          },
+        },
       },
     });
 
@@ -68,7 +81,13 @@ export class AuxiliaresService {
       throw new NotFoundException('Auxiliar no encontrado');
     }
 
-    return auxiliar;
+    // Aplana los campos del usuario en el objeto principal
+    const { usuarios, ...rest } = auxiliar;
+    return buildResponse(true, 'Datos obtenidos exitosamente', {
+      ...rest,
+      ...usuarios,
+      correo: usuarios.email_,
+    });
   }
 
   async update(id: string, updateAuxiliareDto: UpdateAuxiliareDto) {

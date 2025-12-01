@@ -39,6 +39,14 @@ export class AuxiliaresController {
     return this.auxiliaresService.findAll();
   }
 
+  @Roles(Role.Auxiliar)
+  @Get('perfil')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener perfil del auxiliar autenticado' })
+  async getPerfil(@Request() req) {
+    return this.auxiliaresService.findOne(req.user.id);
+  }
+
   @Roles(Role.Admin, Role.Odontologo, Role.Auxiliar)
   @Get(':id')
   @ApiBearerAuth()

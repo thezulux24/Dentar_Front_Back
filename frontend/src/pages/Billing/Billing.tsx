@@ -112,7 +112,7 @@ const Billing = () => {
 
         {/* Estadísticas */}
         <Grid container spacing={2} mb={4}>
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Card elevation={2}>
               <CardContent>
                 <Stack direction="row" alignItems="center" spacing={2}>
@@ -132,7 +132,7 @@ const Billing = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Card elevation={2}>
               <CardContent>
                 <Stack direction="row" alignItems="center" spacing={2}>
@@ -152,7 +152,7 @@ const Billing = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Card elevation={2}>
               <CardContent>
                 <Stack direction="row" alignItems="center" spacing={2}>

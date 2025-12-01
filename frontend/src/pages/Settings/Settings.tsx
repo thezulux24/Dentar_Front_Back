@@ -203,7 +203,16 @@ const Settings = () => {
         }
         break;
       case 'auxiliar':
-        endpoint = `${import.meta.env.VITE_BACKEND_URL}/auxiliar`
+        endpoint = `${import.meta.env.VITE_BACKEND_URL}/auxiliares`
+        updateData = {
+          "nombres": datosEditados.nombres,
+          "apellidos": datosEditados.apellidos,
+          "informacion_personal": datosEditados.informacion_personal,
+          "fecha_de_nacimiento": datosEditados.fecha_de_nacimiento,
+          "telefono": datosEditados.telefono,
+          "direccion": datosEditados.direccion,
+          "identificacion": datosEditados.identificacion,
+        }
         break;
       default:
         endpoint = ''
