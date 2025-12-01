@@ -25,6 +25,8 @@ import {
   CircularProgress,
   Alert,
   Pagination,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -34,7 +36,9 @@ import {
   PendingActions as PendingIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
+import { useState } from 'react';
 import { useFacturacion } from '../../hooks/useFacturacion';
+import InvoicePrint from '../../components/InvoicePrint';
 
 const Billing = () => {
   const theme = useTheme();
@@ -49,7 +53,32 @@ const Billing = () => {
     totalPaginas,
     cambiarPagina,
     buscar,
+    obtenerDetallePaciente,
   } = useFacturacion();
+
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<any>(null);
+  const [loadingInvoice, setLoadingInvoice] = useState(false);
+
+  const handleVerDetalle = async (id_paciente: string) => {
+    setLoadingInvoice(true);
+    try {
+      const detalle = await obtenerDetallePaciente(id_paciente);
+      if (detalle) {
+        setInvoiceData(detalle);
+        setShowInvoice(true);
+      }
+    } catch (error) {
+      console.error('Error al obtener detalle:', error);
+    } finally {
+      setLoadingInvoice(false);
+    }
+  };
+
+  const handleCloseInvoice = () => {
+    setShowInvoice(false);
+    setInvoiceData(null);
+  };
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('es-CO', {
@@ -266,9 +295,8 @@ const Billing = () => {
                               size="small"
                               color="primary"
                               title="Ver detalle"
-                              onClick={() => {
-                                console.log('Ver detalle:', paciente.id_paciente);
-                              }}
+                              onClick={() => handleVerDetalle(paciente.id_paciente)}
+                              disabled={loadingInvoice}
                             >
                               <VisibilityIcon />
                             </IconButton>
@@ -315,6 +343,29 @@ const Billing = () => {
             Registrar Pago
           </Button>
         </Box>
+
+        {/* Dialog para mostrar factura */}
+        <Dialog
+          open={showInvoice}
+          onClose={handleCloseInvoice}
+          maxWidth="lg"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 2,
+              maxHeight: '90vh',
+            },
+          }}
+        >
+          <DialogContent sx={{ p: 0 }}>
+            {invoiceData && (
+              <InvoicePrint
+                detalle={invoiceData}
+                onClose={handleCloseInvoice}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </Container>
     </Box>
   );

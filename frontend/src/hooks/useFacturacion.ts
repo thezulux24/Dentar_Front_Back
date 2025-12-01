@@ -26,6 +26,42 @@ interface PacientesResponse {
   totalPaginas: number;
 }
 
+interface CitaDetalle {
+  id_cita: string;
+  fecha: string;
+  motivo: string;
+  observaciones?: string;
+  odontologo: string;
+  estado: string;
+  monto: number;
+  pagado: number;
+  saldo: number;
+  pagos: Array<{
+    id_pago: string;
+    monto: number;
+    fecha: string;
+    metodo: string;
+    estado: string;
+    observaciones?: string;
+  }>;
+}
+
+interface DetallePaciente {
+  paciente: {
+    id_paciente: string;
+    nombre: string;
+    identificacion: string;
+    email?: string;
+    telefono?: string;
+  };
+  resumen: {
+    totalFacturado: number;
+    totalPagado: number;
+    saldoPendiente: number;
+  };
+  citas: CitaDetalle[];
+}
+
 export const useFacturacion = () => {
   const [resumen, setResumen] = useState<ResumenFacturacion>({
     totalFacturado: 0,
@@ -118,6 +154,25 @@ export const useFacturacion = () => {
     setPagina(1); // Resetear a primera página al buscar
   };
 
+  // Obtener detalle completo de un paciente
+  const obtenerDetallePaciente = async (id_paciente: string): Promise<DetallePaciente | null> => {
+    try {
+      const response = await fetchData({
+        url: `${baseUrl}/facturacion/paciente/${id_paciente}`,
+        method: 'GET',
+        token,
+      });
+
+      if (response?.success && response.data) {
+        return response.data as DetallePaciente;
+      }
+      return null;
+    } catch (err) {
+      console.error('Error al obtener detalle del paciente:', err);
+      return null;
+    }
+  };
+
   return {
     resumen,
     pacientes,
@@ -128,6 +183,7 @@ export const useFacturacion = () => {
     busqueda,
     cambiarPagina,
     buscar,
+    obtenerDetallePaciente,
     recargar: () => {
       obtenerResumen();
       obtenerPacientes(pagina, busqueda);
