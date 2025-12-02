@@ -148,6 +148,30 @@ const PatientPage = () => {
         fetchPatientTreatments();
     };
 
+    const handleUpdateTreatmentStatus = async (id_tratamiento_usuario: string, nuevoEstado: string) => {
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/tratamientos-usuarios/${id_tratamiento_usuario}/estado/${nuevoEstado}`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.ok) {
+                openAlert('Estado actualizado exitosamente', 'success');
+                fetchPatientTreatments(); // Recargar tratamientos
+            } else {
+                openAlert('Error al actualizar el estado', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating treatment status:', error);
+            openAlert('Error al actualizar el estado', 'error');
+        }
+    };
+
     useEffect(() => {
         if (patientId) {
             fetchPatientTreatments();
@@ -286,7 +310,7 @@ const PatientPage = () => {
                                             label={treatment.estado || 'En progreso'}
                                             size="small"
                                             color={
-                                                treatment.estado === 'Completado'
+                                                treatment.estado === 'Finalizado'
                                                     ? 'success'
                                                     : treatment.estado === 'En progreso'
                                                     ? 'primary'
@@ -294,6 +318,17 @@ const PatientPage = () => {
                                             }
                                             sx={{ mt: 1 }}
                                         />
+                                        {treatment.estado !== 'Finalizado' && (
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                color="success"
+                                                onClick={() => handleUpdateTreatmentStatus(treatment.id_asignacion, 'Finalizado')}
+                                                sx={{ mt: 1, ml: 1 }}
+                                            >
+                                                Marcar Finalizado
+                                            </Button>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))}

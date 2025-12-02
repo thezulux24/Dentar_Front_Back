@@ -27,6 +27,20 @@ interface CitaFactura {
   saldo: number;
 }
 
+interface ServicioFactura {
+  id_cita?: string;
+  id_tratamiento_usuario?: string;
+  tipo: 'cita' | 'tratamiento';
+  fecha: string;
+  motivo: string;
+  observaciones?: string;
+  odontologo: string;
+  estado: string;
+  monto: number;
+  pagado: number;
+  saldo: number;
+}
+
 interface InvoicePrintProps {
   detalle: {
     paciente: {
@@ -41,14 +55,29 @@ interface InvoicePrintProps {
       totalPagado: number;
       saldoPendiente: number;
     };
-    citas: CitaFactura[];
+    citas?: CitaFactura[];
+    servicios?: ServicioFactura[];
   };
   onClose: () => void;
 }
 
 const InvoicePrint = ({ detalle, onClose }: InvoicePrintProps) => {
-  const { paciente, resumen, citas } = detalle;
+  const { paciente, resumen } = detalle;
   const componentRef = useRef<HTMLDivElement>(null);
+
+  // Usar servicios o convertir citas a servicios para retrocompatibilidad
+  const servicios: ServicioFactura[] = detalle.servicios || (detalle.citas || []).map(cita => ({
+    id_cita: cita.id_cita,
+    tipo: 'cita' as const,
+    fecha: cita.fecha,
+    motivo: cita.motivo,
+    observaciones: cita.observaciones,
+    odontologo: cita.odontologo,
+    estado: cita.estado,
+    monto: cita.monto,
+    pagado: cita.pagado,
+    saldo: cita.saldo,
+  }));
 
   const handlePrint = () => {
     window.print();
@@ -195,6 +224,7 @@ const InvoicePrint = ({ detalle, onClose }: InvoicePrintProps) => {
           <Table sx={{ mb: 3 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: 'primary.main' }}>
+                <TableCell sx={{ color: 'white', fontWeight: 600 }}>Tipo</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 600 }}>Fecha</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 600 }}>Descripción</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 600 }}>Profesional</TableCell>
@@ -210,28 +240,46 @@ const InvoicePrint = ({ detalle, onClose }: InvoicePrintProps) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {citas.map((cita) => (
-                <TableRow key={cita.id_cita} hover>
-                  <TableCell>{formatDate(cita.fecha)}</TableCell>
+              {servicios.map((servicio, index) => {
+                const key = servicio.id_cita 
+                  ? `cita-${servicio.id_cita}` 
+                  : servicio.id_tratamiento_usuario 
+                  ? `tratamiento-${servicio.id_tratamiento_usuario}`
+                  : `servicio-${index}`;
+                
+                return (
+                <TableRow key={key} hover>
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        color: servicio.tipo === 'cita' ? 'primary.main' : 'secondary.main',
+                      }}
+                    >
+                      {servicio.tipo === 'cita' ? 'Consulta' : 'Tratamiento'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{formatDate(servicio.fecha)}</TableCell>
                   <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {cita.motivo}
+                      {servicio.motivo}
                     </Typography>
-                    {cita.observaciones && (
+                    {servicio.observaciones && (
                       <Typography variant="caption" color="text.secondary">
-                        {cita.observaciones}
+                        {servicio.observaciones}
                       </Typography>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2">{cita.odontologo}</Typography>
+                    <Typography variant="body2">{servicio.odontologo}</Typography>
                   </TableCell>
                   <TableCell align="right">
-                    <Typography variant="body2">{formatCurrency(cita.monto)}</Typography>
+                    <Typography variant="body2">{formatCurrency(servicio.monto)}</Typography>
                   </TableCell>
                   <TableCell align="right">
                     <Typography variant="body2" color="success.main">
-                      {formatCurrency(cita.pagado)}
+                      {formatCurrency(servicio.pagado)}
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
@@ -239,14 +287,15 @@ const InvoicePrint = ({ detalle, onClose }: InvoicePrintProps) => {
                       variant="body2"
                       sx={{
                         fontWeight: 600,
-                        color: cita.saldo > 0 ? 'warning.main' : 'success.main',
+                        color: servicio.saldo > 0 ? 'warning.main' : 'success.main',
                       }}
                     >
-                      {formatCurrency(cita.saldo)}
+                      {formatCurrency(servicio.saldo)}
                     </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
