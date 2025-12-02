@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import useFetch, { FetchResponse } from './useFetch';
 import useAuthStore from '../store/authStore';
 
-interface CitaPendiente {
-  id_cita: string;
+interface ServicioPendiente {
+  id: string;
+  tipo: 'cita' | 'tratamiento';
   fecha_cita: string;
   motivo: string;
   nombre_tratamiento: string;
+  descripcion?: string;
   odontologo: string;
   monto: number;
   pagado: number;
@@ -14,7 +16,9 @@ interface CitaPendiente {
 }
 
 interface CitasPendientesResponse {
-  citas: CitaPendiente[];
+  citas: ServicioPendiente[];
+  tratamientos: ServicioPendiente[];
+  servicios: ServicioPendiente[];
   total_pendiente: number;
 }
 
@@ -44,7 +48,7 @@ interface HistorialPagosResponse {
 }
 
 export const usePagos = () => {
-  const [citasPendientes, setCitasPendientes] = useState<CitaPendiente[]>([]);
+  const [citasPendientes, setCitasPendientes] = useState<ServicioPendiente[]>([]);
   const [metodosPago, setMetodosPago] = useState<MetodoPago[]>([]);
   const [historialPagos, setHistorialPagos] = useState<PagoHistorial[]>([]);
   const [loading, setLoading] = useState(false);
@@ -69,8 +73,8 @@ export const usePagos = () => {
       // El backend retorna { success, message, data }
       if (response && response.success) {
         const data = response.data as CitasPendientesResponse;
-        if (data && data.citas) {
-          setCitasPendientes(data.citas);
+        if (data && data.servicios) {
+          setCitasPendientes(data.servicios);
           setTotalPendiente(data.total_pendiente);
         }
       }
@@ -99,15 +103,25 @@ export const usePagos = () => {
   };
 
   // Registrar pago
-  const registrarPago = async (citas: string[], id_metodo_pago: string, observaciones?: string) => {
+  const registrarPago = async (servicios: string[], id_metodo_pago: string, observaciones?: string) => {
     setLoading(true);
     setError(null);
     try {
+      // Separar los IDs en citas y tratamientos basándose en los servicios actuales
+      const citas = servicios
+        .map(id => citasPendientes.find(s => s.id === id && s.tipo === 'cita')?.id)
+        .filter(Boolean) as string[];
+      
+      const tratamientos = servicios
+        .map(id => citasPendientes.find(s => s.id === id && s.tipo === 'tratamiento')?.id)
+        .filter(Boolean) as string[];
+
       const response = await fetchData({
         url: `${baseUrl}/pagos/registrar`,
         method: 'POST',
         body: {
           citas,
+          tratamientos,
           id_parametro_metodo_pago: id_metodo_pago,
           observaciones,
         },

@@ -60,6 +60,41 @@ export class PagosService {
       },
     });
 
+    // Obtener tratamientos finalizados del paciente
+    const tratamientos = await this.prisma.tratamientos_usuarios.findMany({
+      where: {
+        id_usuario: id_paciente,
+        eliminado: -1,
+        parametros: {
+          nombre: 'Finalizado',
+          eliminado: -1,
+        },
+      },
+      select: {
+        id_tratamiento_usuario: true,
+        fecha_actualizacion: true,
+        fecha_creacion: true,
+        tratamiento: {
+          select: {
+            nombre_tratamiento: true,
+            precio_estimado: true,
+            descripcion: true,
+          },
+        },
+        pagos: {
+          where: {
+            eliminado: -1,
+          },
+          select: {
+            monto: true,
+          },
+        },
+      },
+      orderBy: {
+        fecha_creacion: 'desc',
+      },
+    });
+
     // Calcular saldo pendiente de cada cita
     const citasConSaldo = citas.map((cita) => {
       const precioCita = parseFloat(cita.precio_consulta?.toString() || '0');
@@ -70,7 +105,8 @@ export class PagosService {
       const saldoPendiente = precioCita - totalPagado;
 
       return {
-        id_cita: cita.id_cita,
+        id: cita.id_cita,
+        tipo: 'cita',
         fecha_cita: cita.fecha_cita,
         motivo: cita.motivo,
         nombre_tratamiento: cita.tratamientos_usuarios?.tratamiento?.nombre_tratamiento || 'Consulta general',
@@ -83,12 +119,40 @@ export class PagosService {
       };
     });
 
-    // Filtrar solo las que tienen saldo pendiente
+    // Formatear tratamientos (los tratamientos no tienen pagos asociados directamente)
+    const tratamientosFormateados = tratamientos.map((tu) => {
+      const precioTratamiento = parseFloat(tu.tratamiento.precio_estimado?.toString() || '0');
+      const totalPagado = tu.pagos.reduce(
+        (sum, pago) => sum + parseFloat(pago.monto?.toString() || '0'),
+        0,
+      );
+      const saldoPendiente = precioTratamiento - totalPagado;
+
+      return {
+        id: tu.id_tratamiento_usuario,
+        tipo: 'tratamiento',
+        fecha_cita: tu.fecha_actualizacion || tu.fecha_creacion,
+        motivo: tu.tratamiento.nombre_tratamiento || 'Tratamiento',
+        nombre_tratamiento: tu.tratamiento.nombre_tratamiento || 'Tratamiento',
+        descripcion: tu.tratamiento.descripcion,
+        odontologo: 'N/A',
+        monto: precioTratamiento,
+        pagado: totalPagado,
+        saldo_pendiente: saldoPendiente,
+      };
+    }).filter((t) => t.saldo_pendiente > 0); // Filtrar solo tratamientos con saldo pendiente
+
+    // Filtrar solo las citas con saldo pendiente
     const citasPendientes = citasConSaldo.filter((c) => c.saldo_pendiente > 0);
+
+    // Combinar citas y tratamientos
+    const serviciosPendientes = [...citasPendientes, ...tratamientosFormateados];
 
     return {
       citas: citasPendientes,
-      total_pendiente: citasPendientes.reduce((sum, c) => sum + c.saldo_pendiente, 0),
+      tratamientos: tratamientosFormateados,
+      servicios: serviciosPendientes,
+      total_pendiente: serviciosPendientes.reduce((sum, s) => sum + s.saldo_pendiente, 0),
     };
   }
 
@@ -96,10 +160,10 @@ export class PagosService {
    * Registrar pago desde el módulo del paciente
    */
   async registrarPagoPaciente(id_paciente: string, createPagoDto: CreatePagoPacienteDto) {
-    const { citas, id_parametro_metodo_pago, observaciones } = createPagoDto;
+    const { citas, tratamientos, id_parametro_metodo_pago, observaciones } = createPagoDto;
 
-    if (!citas || citas.length === 0) {
-      throw new BadRequestException('Debe seleccionar al menos una cita para pagar');
+    if ((!citas || citas.length === 0) && (!tratamientos || tratamientos.length === 0)) {
+      throw new BadRequestException('Debe seleccionar al menos un servicio para pagar');
     }
 
     // Obtener el parámetro de estado "Pagado"
@@ -126,26 +190,65 @@ export class PagosService {
       throw new NotFoundException('No se encontró el parámetro de estado "Completada"');
     }
 
-    // Validar que todas las citas existen, están completadas y pertenecen al paciente
-    const citasValidadas = await this.prisma.citas.findMany({
-      where: {
-        id_cita: { in: citas },
-        id_paciente,
-        eliminado: -1,
-        id_parametro_estado_cita: estadoCompletada.id_parametro,
-        precio_consulta: { not: null },
-      },
-      include: {
-        pagos: {
-          where: {
-            eliminado: -1,
+    // Validar citas si hay alguna
+    let citasValidadas: any[] = [];
+    if (citas && citas.length > 0) {
+      citasValidadas = await this.prisma.citas.findMany({
+        where: {
+          id_cita: { in: citas },
+          id_paciente,
+          eliminado: -1,
+          id_parametro_estado_cita: estadoCompletada.id_parametro,
+          precio_consulta: { not: null },
+        },
+        include: {
+          pagos: {
+            where: {
+              eliminado: -1,
+            },
           },
         },
+      });
+
+      if (citasValidadas.length !== citas.length) {
+        throw new BadRequestException('Algunas citas no son válidas o no pertenecen al paciente');
+      }
+    }
+
+    // Validar tratamientos si hay alguno
+    let tratamientosValidados: any[] = [];
+    const estadoFinalizado = await this.prisma.parametros.findFirst({
+      where: {
+        nombre: 'Finalizado',
+        eliminado: -1,
       },
     });
 
-    if (citasValidadas.length !== citas.length) {
-      throw new BadRequestException('Algunas citas no son válidas o no pertenecen al paciente');
+    if (tratamientos && tratamientos.length > 0) {
+      if (!estadoFinalizado) {
+        throw new NotFoundException('No se encontró el parámetro de estado "Finalizado"');
+      }
+
+      tratamientosValidados = await this.prisma.tratamientos_usuarios.findMany({
+        where: {
+          id_tratamiento_usuario: { in: tratamientos },
+          id_usuario: id_paciente,
+          eliminado: -1,
+          id_parametro_estado_tratamiento: estadoFinalizado.id_parametro,
+        },
+        include: {
+          tratamiento: {
+            select: {
+              nombre_tratamiento: true,
+              precio_estimado: true,
+            },
+          },
+        },
+      });
+
+      if (tratamientosValidados.length !== tratamientos.length) {
+        throw new BadRequestException('Algunos tratamientos no son válidos o no pertenecen al paciente');
+      }
     }
 
     // Crear los pagos en una transacción
@@ -221,11 +324,66 @@ export class PagosService {
       });
     }
 
+    // Procesar pagos de tratamientos
+    for (const tratamiento of tratamientosValidados) {
+      const precioTratamiento = parseFloat(tratamiento.tratamiento.precio_estimado?.toString() || '0');
+      
+      if (precioTratamiento === 0) {
+        throw new BadRequestException(`El tratamiento ${tratamiento.id_tratamiento_usuario} no tiene un precio establecido`);
+      }
+
+      // Crear el pago por el tratamiento completo
+      const pago = await this.prisma.pagos.create({
+        data: {
+          id_tratamiento_usuario: tratamiento.id_tratamiento_usuario,
+          id_paciente,
+          monto: new Decimal(precioTratamiento),
+          id_parametro_metodo_pago,
+          id_parametro_estado_pago: estadoPagado.id_parametro,
+          observaciones: observaciones || `Pago de tratamiento: ${tratamiento.tratamiento.nombre_tratamiento}`,
+          fecha_pago: new Date(),
+          eliminado: -1,
+        },
+        include: {
+          parametros_pagos_id_parametro_metodo_pagoToparametros: {
+            select: {
+              nombre: true,
+            },
+          },
+          tratamientos_usuarios: {
+            select: {
+              tratamiento: {
+                select: {
+                  nombre_tratamiento: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      totalPagado += precioTratamiento;
+      pagosCreados.push({
+        id_pago: pago.id_pago,
+        id_cita: '',
+        monto: parseFloat(pago.monto?.toString() || '0'),
+        fecha_pago: pago.fecha_pago || new Date(),
+        metodo_pago: pago.parametros_pagos_id_parametro_metodo_pagoToparametros?.nombre || '',
+        cita: {
+          fecha_cita: tratamiento.fecha_actualizacion || tratamiento.fecha_creacion || new Date(),
+          motivo: pago.tratamientos_usuarios?.tratamiento?.nombre_tratamiento || 'Tratamiento',
+          tratamiento: pago.tratamientos_usuarios?.tratamiento?.nombre_tratamiento || null,
+        },
+      });
+    }
+
     return {
       mensaje: 'Pagos registrados exitosamente',
       pagos: pagosCreados,
       total_pagado: totalPagado,
-      cantidad_citas: pagosCreados.length,
+      cantidad_citas: citasValidadas.length,
+      cantidad_tratamientos: tratamientosValidados.length,
+      cantidad_total: pagosCreados.length,
     };
   }
 

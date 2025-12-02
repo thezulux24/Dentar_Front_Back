@@ -166,6 +166,14 @@ export class FacturacionService {
                 precio_estimado: true,
               },
             },
+            pagos: {
+              where: {
+                eliminado: -1,
+              },
+              select: {
+                monto: true,
+              },
+            },
           },
           orderBy: {
             fecha_creacion: 'desc',
@@ -209,6 +217,14 @@ export class FacturacionService {
           (sum, cita) =>
             sum +
             cita.pagos.reduce(
+              (pagoSum, pago) => pagoSum + parseFloat(pago.monto?.toString() || '0'),
+              0,
+            ),
+          0,
+        ) + tratamientos.reduce(
+          (sum, tu) =>
+            sum +
+            tu.pagos.reduce(
               (pagoSum, pago) => pagoSum + parseFloat(pago.monto?.toString() || '0'),
               0,
             ),
@@ -354,6 +370,32 @@ export class FacturacionService {
                 nombre: true,
               },
             },
+            pagos: {
+              where: {
+                eliminado: -1,
+              },
+              select: {
+                id_pago: true,
+                monto: true,
+                fecha_pago: true,
+                observaciones: true,
+                parametros_pagos_id_parametro_metodo_pagoToparametros: {
+                  select: {
+                    id_parametro: true,
+                    nombre: true,
+                  },
+                },
+                parametros_pagos_id_parametro_estado_pagoToparametros: {
+                  select: {
+                    id_parametro: true,
+                    nombre: true,
+                  },
+                },
+              },
+              orderBy: {
+                fecha_pago: 'desc',
+              },
+            },
           },
           orderBy: {
             fecha_creacion: 'desc',
@@ -386,6 +428,11 @@ export class FacturacionService {
       (sum, cita) =>
         sum +
         cita.pagos.reduce((pagoSum, pago) => pagoSum + parseFloat(pago.monto?.toString() || '0'), 0),
+      0,
+    ) + tratamientos.reduce(
+      (sum, tu) =>
+        sum +
+        tu.pagos.reduce((pagoSum, pago) => pagoSum + parseFloat(pago.monto?.toString() || '0'), 0),
       0,
     );
 
@@ -426,6 +473,10 @@ export class FacturacionService {
     // Formatear tratamientos
     const tratamientosFormateados = tratamientos.map((tu) => {
       const montoTratamiento = parseFloat(tu.tratamiento.precio_estimado?.toString() || '0');
+      const pagadoTratamiento = tu.pagos.reduce(
+        (sum, pago) => sum + parseFloat(pago.monto?.toString() || '0'),
+        0,
+      );
 
       return {
         id_tratamiento_usuario: tu.id_tratamiento_usuario,
@@ -436,9 +487,16 @@ export class FacturacionService {
         odontologo: 'N/A',
         estado: tu.parametros?.nombre || 'Finalizado',
         monto: montoTratamiento,
-        pagado: 0,
-        saldo: montoTratamiento,
-        pagos: [],
+        pagado: pagadoTratamiento,
+        saldo: montoTratamiento - pagadoTratamiento,
+        pagos: tu.pagos.map((pago) => ({
+          id_pago: pago.id_pago,
+          monto: parseFloat(pago.monto?.toString() || '0'),
+          fecha: pago.fecha_pago,
+          metodo: pago.parametros_pagos_id_parametro_metodo_pagoToparametros?.nombre || 'N/A',
+          estado: pago.parametros_pagos_id_parametro_estado_pagoToparametros?.nombre || 'N/A',
+          observaciones: pago.observaciones,
+        })),
       };
     });
 

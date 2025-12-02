@@ -74,9 +74,10 @@ const Payment = () => {
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [pagoExitoso, setPagoExitoso] = useState(false);
   const [procesandoPago, setProcesandoPago] = useState(false);
+  const [totalPagado, setTotalPagado] = useState(0);
 
   const totalAPagar = citasPendientes
-    .filter((c) => citasSeleccionadas.includes(c.id_cita))
+    .filter((c) => citasSeleccionadas.includes(c.id))
     .reduce((sum, c) => sum + c.saldo_pendiente, 0);
 
   const formatCurrency = (value: number) =>
@@ -86,11 +87,11 @@ const Payment = () => {
       minimumFractionDigits: 0,
     }).format(value);
 
-  const handleToggleCita = (id_cita: string) => {
+  const handleToggleCita = (id: string) => {
     setCitasSeleccionadas((prev) =>
-      prev.includes(id_cita)
-        ? prev.filter((id) => id !== id_cita)
-        : [...prev, id_cita]
+      prev.includes(id)
+        ? prev.filter((idServicio) => idServicio !== id)
+        : [...prev, id]
     );
   };
 
@@ -98,13 +99,13 @@ const Payment = () => {
     if (citasSeleccionadas.length === citasPendientes.length) {
       setCitasSeleccionadas([]);
     } else {
-      setCitasSeleccionadas(citasPendientes.map((c) => c.id_cita));
+      setCitasSeleccionadas(citasPendientes.map((c) => c.id));
     }
   };
 
   const handleProcesarPago = () => {
     if (citasSeleccionadas.length === 0) {
-      alert('Selecciona al menos una cita para pagar');
+      alert('Selecciona al menos un servicio para pagar');
       return;
     }
     if (!metodoPago) {
@@ -117,6 +118,7 @@ const Payment = () => {
 
   const handleConfirmarPago = async () => {
     setProcesandoPago(true);
+    setTotalPagado(totalAPagar); // Guardar el total antes de procesar
 
     const resultado = await registrarPago(
       citasSeleccionadas,
@@ -159,7 +161,7 @@ const Payment = () => {
                 Realizar Pago
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Selecciona las citas que deseas pagar
+                Selecciona las consultas y tratamientos que deseas pagar
               </Typography>
             </Box>
           </Box>
@@ -176,7 +178,7 @@ const Payment = () => {
               ¡Pago registrado exitosamente!
             </Typography>
             <Typography variant="body2">
-              Tu pago de {formatCurrency(totalAPagar)} ha sido procesado correctamente.
+              Tu pago de {formatCurrency(totalPagado)} ha sido procesado correctamente.
             </Typography>
           </Alert>
         )}
@@ -199,7 +201,7 @@ const Payment = () => {
               <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
                 <Box sx={{ bgcolor: 'primary.main', p: 2 }}>
                   <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-                    Citas Pendientes de Pago
+                    Servicios Pendientes de Pago
                   </Typography>
                 </Box>
 
@@ -235,8 +237,9 @@ const Payment = () => {
                           <TableHead>
                             <TableRow>
                               <TableCell padding="checkbox"></TableCell>
+                              <TableCell sx={{ fontWeight: 600 }}>Tipo</TableCell>
                               <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
-                              <TableCell sx={{ fontWeight: 600 }}>Tratamiento</TableCell>
+                              <TableCell sx={{ fontWeight: 600 }}>Descripción</TableCell>
                               <TableCell sx={{ fontWeight: 600 }}>Odontólogo</TableCell>
                               <TableCell sx={{ fontWeight: 600 }} align="right">
                                 Saldo Pendiente
@@ -244,44 +247,56 @@ const Payment = () => {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {citasPendientes.map((cita) => (
+                            {citasPendientes.map((servicio) => (
                               <TableRow
-                                key={cita.id_cita}
+                                key={servicio.id}
                                 hover
-                                onClick={() => handleToggleCita(cita.id_cita)}
+                                onClick={() => handleToggleCita(servicio.id)}
                                 sx={{
                                   cursor: 'pointer',
-                                  bgcolor: citasSeleccionadas.includes(cita.id_cita)
+                                  bgcolor: citasSeleccionadas.includes(servicio.id)
                                     ? 'action.selected'
                                     : 'inherit',
                                 }}
                               >
                                 <TableCell padding="checkbox">
                                   <Checkbox
-                                    checked={citasSeleccionadas.includes(cita.id_cita)}
+                                    checked={citasSeleccionadas.includes(servicio.id)}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Chip
+                                    label={servicio.tipo === 'cita' ? 'Consulta' : 'Tratamiento'}
+                                    size="small"
+                                    color={servicio.tipo === 'cita' ? 'primary' : 'secondary'}
                                   />
                                 </TableCell>
                                 <TableCell>
                                   <Typography variant="body2">
-                                    {new Date(cita.fecha_cita).toLocaleDateString('es-CO')}
+                                    {new Date(servicio.fecha_cita).toLocaleDateString('es-CO')}
                                   </Typography>
                                 </TableCell>
                                 <TableCell>
                                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                    {cita.nombre_tratamiento}
+                                    {servicio.nombre_tratamiento}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">
-                                    {cita.motivo}
+                                    {servicio.motivo}
                                   </Typography>
+                                  {servicio.descripcion && (
+                                    <Typography variant="caption" color="text.secondary" display="block">
+                                      {servicio.descripcion}
+                                    </Typography>
+                                  )}
                                 </TableCell>
                                 <TableCell>
                                   <Typography variant="body2" color="text.secondary">
-                                    {cita.odontologo}
+                                    {servicio.odontologo}
                                   </Typography>
                                 </TableCell>
                                 <TableCell align="right">
                                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                    {formatCurrency(cita.saldo_pendiente)}
+                                    {formatCurrency(servicio.saldo_pendiente)}
                                   </Typography>
                                 </TableCell>
                               </TableRow>
@@ -309,7 +324,7 @@ const Payment = () => {
                     <Stack spacing={1.5}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="body2" color="text.secondary">
-                          Citas seleccionadas:
+                          Servicios seleccionados:
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
                           {citasSeleccionadas.length}
@@ -402,7 +417,7 @@ const Payment = () => {
                 {citasSeleccionadas.length === 0 && (
                   <Alert severity="warning" icon={<WarningIcon />}>
                     <Typography variant="caption">
-                      Selecciona al menos una cita para continuar
+                      Selecciona al menos un servicio para continuar
                     </Typography>
                   </Alert>
                 )}
@@ -444,10 +459,10 @@ const Payment = () => {
               </Typography>
 
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Citas a pagar:
+                Servicios a pagar:
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 600, mb: 2 }}>
-                {citasSeleccionadas.length} cita(s)
+                {citasSeleccionadas.length} servicio(s)
               </Typography>
 
               <Divider sx={{ my: 2 }} />
