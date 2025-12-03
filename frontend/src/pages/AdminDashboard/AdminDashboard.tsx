@@ -124,35 +124,52 @@ export default function AdminDashboard() {
       let citasHoy = 0;
       let citasMes = 0;
       try {
-        const citasRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/citas`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (citasRes.ok) {
-          const citasData = await citasRes.json();
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-          firstDayOfMonth.setHours(0, 0, 0, 0);
-          const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-          lastDayOfMonth.setHours(23, 59, 59, 999);
-          
-          const citas = citasData.data || citasData.citas || [];
-          
-          citasHoy = citas.filter((cita: any) => {
-            if (!cita.fecha_cita) return false;
-            const citaDate = new Date(cita.fecha_cita);
-            citaDate.setHours(0, 0, 0, 0);
-            return citaDate.getTime() === today.getTime();
-          }).length;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        firstDayOfMonth.setHours(0, 0, 0, 0);
+        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        lastDayOfMonth.setHours(23, 59, 59, 999);
 
-          citasMes = citas.filter((cita: any) => {
-            if (!cita.fecha_cita) return false;
-            const citaDate = new Date(cita.fecha_cita);
-            return citaDate >= firstDayOfMonth && citaDate <= lastDayOfMonth;
-          }).length;
+        // Formatear fechas a 'YYYY-MM-DD'
+        const formatDate = (date: Date) => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+
+        const todayStr = formatDate(today);
+        const firstDayStr = formatDate(firstDayOfMonth);
+        const lastDayStr = formatDate(lastDayOfMonth);
+
+        // Obtener citas de hoy
+        const citasHoyRes = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/citas?fecha_inicio=${todayStr}&fecha_fin=${todayStr}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (citasHoyRes.ok) {
+          const citasHoyData = await citasHoyRes.json();
+          citasHoy = citasHoyData.data?.total_items || 0;
+        }
+
+        // Obtener citas del mes
+        const citasMesRes = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/citas?fecha_inicio=${firstDayStr}&fecha_fin=${lastDayStr}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (citasMesRes.ok) {
+          const citasMesData = await citasMesRes.json();
+          citasMes = citasMesData.data?.total_items || 0;
         }
       } catch (error) {
-        console.log('No se pudieron obtener estadísticas de citas');
+        console.log('No se pudieron obtener estadísticas de citas:', error);
       }
 
       // Obtener ingresos del mes (si el endpoint existe)
@@ -169,7 +186,7 @@ export default function AdminDashboard() {
           const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
           lastDayOfMonth.setHours(23, 59, 59, 999);
           
-          const pagos = pagosData.data?.pagos || pagosData.data || [];
+          const pagos = pagosData.data?.pagos || [];
           
           const totalIngresos = pagos.reduce((sum: number, pago: any) => {
             if (!pago.fecha_pago) return sum;
@@ -183,7 +200,7 @@ export default function AdminDashboard() {
           ingresosDelMes = `$${totalIngresos.toLocaleString('es-CO', { minimumFractionDigits: 0 })}`;
         }
       } catch (error) {
-        console.log('No se pudieron obtener estadísticas de pagos');
+        console.log('No se pudieron obtener estadísticas de pagos:', error);
       }
 
       setStats({

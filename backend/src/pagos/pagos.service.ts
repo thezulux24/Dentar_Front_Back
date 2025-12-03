@@ -477,4 +477,91 @@ export class PagosService {
 
     return metodos;
   }
+
+  /**
+   * Obtener todos los pagos (Admin/Auxiliar)
+   */
+  async obtenerTodosPagos() {
+    const pagos = await this.prisma.pagos.findMany({
+      where: {
+        eliminado: -1,
+      },
+      select: {
+        id_pago: true,
+        monto: true,
+        fecha_pago: true,
+        observaciones: true,
+        parametros_pagos_id_parametro_metodo_pagoToparametros: {
+          select: {
+            nombre: true,
+          },
+        },
+        parametros_pagos_id_parametro_estado_pagoToparametros: {
+          select: {
+            nombre: true,
+          },
+        },
+        pacientes: {
+          select: {
+            usuarios: {
+              select: {
+                nombres: true,
+                apellidos: true,
+              },
+            },
+          },
+        },
+        citas: {
+          select: {
+            fecha_cita: true,
+            motivo: true,
+            tratamientos_usuarios: {
+              select: {
+                tratamiento: {
+                  select: {
+                    nombre_tratamiento: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        tratamientos_usuarios: {
+          select: {
+            tratamiento: {
+              select: {
+                nombre_tratamiento: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        fecha_pago: 'desc',
+      },
+    });
+
+    const pagosFormateados = pagos.map((pago) => ({
+      id_pago: pago.id_pago,
+      monto: parseFloat(pago.monto?.toString() || '0'),
+      fecha_pago: pago.fecha_pago,
+      metodo_pago: pago.parametros_pagos_id_parametro_metodo_pagoToparametros?.nombre || 'N/A',
+      estado: pago.parametros_pagos_id_parametro_estado_pagoToparametros?.nombre || 'N/A',
+      observaciones: pago.observaciones,
+      paciente: pago.pacientes
+        ? `${pago.pacientes.usuarios.nombres} ${pago.pacientes.usuarios.apellidos}`
+        : 'N/A',
+      servicio: pago.citas
+        ? pago.citas.tratamientos_usuarios?.tratamiento?.nombre_tratamiento || 'Consulta general'
+        : pago.tratamientos_usuarios?.tratamiento?.nombre_tratamiento || 'Tratamiento',
+    }));
+
+    const totalPagado = pagosFormateados.reduce((sum, p) => sum + p.monto, 0);
+
+    return {
+      pagos: pagosFormateados,
+      total_pagado: totalPagado,
+      cantidad_pagos: pagosFormateados.length,
+    };
+  }
 }

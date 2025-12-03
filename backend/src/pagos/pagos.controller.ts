@@ -42,4 +42,11 @@ export class PagosController {
     const metodos = await this.pagosService.obtenerMetodosPago();
     return buildResponse(true, 'Métodos de pago obtenidos exitosamente', metodos);
   }
+
+  @Get()
+  @Roles(Role.Admin, Role.Auxiliar)
+  async obtenerTodosPagos() {
+    const resultado = await this.pagosService.obtenerTodosPagos();
+    return buildResponse(true, 'Pagos obtenidos exitosamente', resultado);
+  }
 }
