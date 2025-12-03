@@ -81,7 +81,7 @@ export class OdontologosController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Actualizar la información de un odontólogo' })
   updateById(@Param('id') id: string, @Body() updateOdontologoDto: UpdateOdontologoDto) {
-    return this.odontologosService.update(id, updateOdontologoDto);
+    return this.odontologosService.update(id, updateOdontologoDto, undefined);
   }
 
   @Roles(Role.Admin)

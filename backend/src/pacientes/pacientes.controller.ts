@@ -101,6 +101,17 @@ export class PacientesController {
     return this.pacientesService.update(req.user.id, updatePacienteDto, foto);
   }
 
+  @Roles(Role.Admin)
+  @Patch(':id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Actualizar la información de un paciente por ID' })
+  async updateById(
+    @Param('id') id: string,
+    @Body() updatePacienteDto: UpdatePacienteDto,
+  ) {
+    return this.pacientesService.update(id, updatePacienteDto, undefined);
+  }
+
   @Roles(Role.Admin, Role.Auxiliar)
   @Delete(':id')
   @ApiBearerAuth()

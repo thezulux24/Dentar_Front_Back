@@ -140,7 +140,10 @@ const Administration = () => {
       if (data.success && data.data) {
         // Para auxiliares, los datos vienen directamente en data.data (array)
         if (Array.isArray(data.data)) {
-          userList = data.data;
+          userList = data.data.map((a: any) => ({
+            ...a,
+            rol: 'Auxiliar',
+          }));
         } 
         // Para pacientes y odontólogos, vienen en data.data.pacientes o data.data.odontologos
         else if (data.data.pacientes) {
@@ -152,6 +155,7 @@ const Administration = () => {
             identificacion: p.identificacion,
             telefono: p.telefono || null,
             eliminado: -1, // Los que retorna findAll son activos
+            rol: 'Paciente',
           }));
         } else if (data.data.odontologos) {
           userList = data.data.odontologos.map((o: any) => ({
@@ -162,6 +166,7 @@ const Administration = () => {
             identificacion: o.identificacion,
             telefono: o.telefono || null,
             eliminado: -1, // Los que retorna findAll son activos
+            rol: 'Odontologo',
           }));
         }
       }
@@ -262,9 +267,15 @@ const Administration = () => {
 
   const handleSubmit = async () => {
     try {
-      // Validar solo campos requeridos básicos (email y clave)
-      if (!formData.email || !formData.clave) {
-        setError('Por favor complete todos los campos requeridos: Email y Contraseña');
+      // Validar email siempre requerido
+      if (!formData.email) {
+        setError('Por favor complete el campo de Email');
+        return;
+      }
+
+      // Validar contraseña solo en modo creación
+      if (dialogMode === 'create' && !formData.clave) {
+        setError('Por favor complete el campo de Contraseña');
         return;
       }
 
@@ -275,13 +286,24 @@ const Administration = () => {
         Admin: '/administradores',
       };
 
-      const endpoint = `${import.meta.env.VITE_BACKEND_URL}${roleEndpoints[formData.rol]}`;
+      let endpoint = `${import.meta.env.VITE_BACKEND_URL}${roleEndpoints[formData.rol]}`;
+      let method = 'POST';
+
+      // Si estamos en modo edición, cambiar el endpoint y el método
+      if (dialogMode === 'edit' && selectedUser) {
+        endpoint = `${endpoint}/${selectedUser.id_usuario}`;
+        method = 'PATCH';
+      }
 
       // Construir el body solo con los campos que tienen valor
       const requestBody: any = {
         email: formData.email.trim(),
-        clave: formData.clave.trim(),
       };
+
+      // Solo agregar contraseña si estamos en modo creación o si se proporcionó en modo edición
+      if (dialogMode === 'create' || (formData.clave && formData.clave.trim())) {
+        requestBody.clave = formData.clave.trim();
+      }
 
       // Agregar campos opcionales solo si tienen valor
       if (formData.nombres && formData.nombres.trim()) {
@@ -309,7 +331,7 @@ const Administration = () => {
       console.log('Enviando datos:', requestBody); // Para debug
 
       const response = await fetch(endpoint, {
-        method: 'POST',
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -322,7 +344,7 @@ const Administration = () => {
       if (!response.ok) {
         console.error('Error response:', responseData);
         // Extraer el mensaje de error de forma más detallada
-        let errorMessage = 'Error al crear usuario';
+        let errorMessage = dialogMode === 'create' ? 'Error al crear usuario' : 'Error al actualizar usuario';
         if (responseData.message) {
           if (Array.isArray(responseData.message)) {
             errorMessage = responseData.message.join(', ');
@@ -494,7 +516,7 @@ const Administration = () => {
                 fullWidth
                 required
               />
-              {dialogMode === 'create' && (
+              {dialogMode === 'create' ? (
                 <TextField
                   label="Contraseña"
                   type="password"
@@ -502,6 +524,15 @@ const Administration = () => {
                   onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
                   fullWidth
                   required
+                />
+              ) : (
+                <TextField
+                  label="Nueva Contraseña (opcional)"
+                  type="password"
+                  value={formData.clave}
+                  onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
+                  fullWidth
+                  helperText="Déjalo en blanco si no deseas cambiar la contraseña"
                 />
               )}
               <TextField

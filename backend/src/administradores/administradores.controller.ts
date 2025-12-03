@@ -39,6 +39,13 @@ export class AdministradoresController {
     return this.administradoresService.update(req.user.id, updateAdministradoresDto);
   }
 
+  @Roles(Role.Admin)
+  @Patch(':id')
+  @ApiOperation({ summary: 'Actualizar la información de un administrador por ID' })
+  async updateById(@Param('id') id: string, @Body() updateAdministradoresDto: UpdateAdministradoresDto) {
+    return this.administradoresService.update(id, updateAdministradoresDto);
+  }
+
   // @Delete(':id')
   // remove(@Param('id') id: string) {
   //   return this.administradoresService.remove(+id);
