@@ -39,6 +39,8 @@ const DashboardPatient = () => {
 
   const [dayAppointments, setDayAppointments] = useState<Appointment[]>([]);
   const [weekAppointments, setWeekAppointments] = useState<Appointment[]>([]);
+  const [treatments, setTreatments] = useState<any[]>([]);
+  const [loadingTreatments, setLoadingTreatments] = useState(false);
 
   const { fetchData, clearData } = useFetch<FetchResponse>();
   const { token } = useAuthStore();
@@ -56,6 +58,50 @@ const DashboardPatient = () => {
     }
 
   }, [activeTab])
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchPatientTreatments();
+    }
+  }, [user?.id]);
+
+  const fetchPatientTreatments = async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoadingTreatments(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/tratamientos-usuarios/mis-tratamientos`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        const tratamientos = result.data?.tratamientos || [];
+        
+        // Formatear los tratamientos para mostrar
+        const formattedTreatments = tratamientos.map((t: any) => ({
+          id: t.id_asignacion || t.id_tratamiento_usuario,
+          title: t.nombre || 'Tratamiento',
+          description: t.descripcion || 'Sin descripción',
+          estado: t.estado || 'En proceso',
+          id_tratamiento: t.id_tratamiento,
+          imagen_url: t.imagen_url,
+          image: t.imagen_url || "https://images.unsplash.com/photo-1684607632041-32d729cdee35?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        }));
+        
+        setTreatments(formattedTreatments);
+      }
+    } catch (error) {
+      console.error('Error fetching patient treatments:', error);
+    } finally {
+      setLoadingTreatments(false);
+    }
+  };
 
   const getAppointments = async( 
     start_date: string,
@@ -102,21 +148,6 @@ const DashboardPatient = () => {
       // setIsLoading(false);
     }
   }
-
-  const treatments = [
-    {
-      image: "https://images.unsplash.com/photo-1684607632041-32d729cdee35?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      title: "Limpieza Dental",
-      description: "Remoción de placa y sarro para prevenir caries",
-      buttonText: "Ver detalles"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1684607632829-1e5bf4f21dab?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      title: "Ortodoncia",
-      description: "Tratamiento para alinear los dientes",
-      buttonText: "Ver progreso"
-    }
-  ];
 
   const handleChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -202,23 +233,33 @@ const DashboardPatient = () => {
           <Typography variant="h6" sx={{ fontWeight: 400, mb: 2 }}>
             Tratamientos
           </Typography>
-          <Box sx={{ 
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' },
-            gap: 2,
-            placeItems: 'center',
-          }}>
-            {treatments.map((treatment, index) => (
-              <Box key={index}>
-                <DentalTreatmentCard
-                  image={treatment.image}
-                  title={treatment.title}
-                  description={treatment.description}
-                  buttonText={treatment.buttonText}
-                />
-              </Box>
-            ))}
-          </Box>
+          {loadingTreatments ? (
+            <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }}>
+              Cargando tratamientos...
+            </Typography>
+          ) : treatments.length > 0 ? (
+            <Box sx={{ 
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' },
+              gap: 2,
+              placeItems: 'center',
+            }}>
+              {treatments.map((treatment, index) => (
+                <Box key={treatment.id || index}>
+                  <DentalTreatmentCard
+                    image={treatment.image}
+                    title={treatment.title}
+                    description={treatment.description}
+                    buttonText="Ver detalles"
+                  />
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }}>
+              No tienes tratamientos activos
+            </Typography>
+          )}
         </Box>
       </Box>
     </Box>
