@@ -47,6 +47,9 @@ const Settings = () => {
   const [foto, setFoto] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [nuevaClave, setNuevaClave] = useState('');
+  const [confirmarClave, setConfirmarClave] = useState('');
+  const [errorClave, setErrorClave] = useState('');
 
   useEffect(() => {
     // Construir URL de petición para cargar los datos del usuario
@@ -170,13 +173,31 @@ const Settings = () => {
     setDatosEditados(datos);
     setFoto(null);
     setPreviewUrl(null);
+    setNuevaClave('');
+    setConfirmarClave('');
+    setErrorClave('');
   };
 
   const handleSave = () => {
+    // Validar contraseñas si se ingresaron
+    if (nuevaClave || confirmarClave) {
+      if (nuevaClave !== confirmarClave) {
+        setErrorClave('Las contraseñas no coinciden');
+        openAlert('Las contraseñas no coinciden', 'error');
+        return;
+      }
+      if (nuevaClave.length < 6) {
+        setErrorClave('La contraseña debe tener al menos 6 caracteres');
+        openAlert('La contraseña debe tener al menos 6 caracteres', 'error');
+        return;
+      }
+    }
+
+    setErrorClave('');
     
     // Construir URL de petición
     let endpoint = '';
-    let updateData = {}
+    let updateData: Record<string, any> = {}
 
     switch( user?.rol.toLowerCase() ){
       case 'paciente':
@@ -188,7 +209,7 @@ const Settings = () => {
           "fecha_de_nacimiento": datosEditados.fecha_de_nacimiento,
           "telefono": datosEditados.telefono,
           "direccion": datosEditados.direccion,
-          "identificacion": datosEditados.identificacion, // ------
+          "identificacion": datosEditados.identificacion,
           "alergias": datosEditados.alergias,
           "tratamientos_previos": datosEditados.tratamientos_previos,
           "tolerante_anestesia": datosEditados.tolerante_anestesia,
@@ -203,7 +224,7 @@ const Settings = () => {
           "fecha_de_nacimiento": datosEditados.fecha_de_nacimiento,
           "telefono": datosEditados.telefono,
           "direccion": datosEditados.direccion,
-          "identificacion": datosEditados.identificacion, // ------
+          "identificacion": datosEditados.identificacion,
           "especialidad": datosEditados.especialidad,
           "sede": datosEditados.sede,
         }
@@ -218,6 +239,7 @@ const Settings = () => {
           "telefono": datosEditados.telefono,
           "direccion": datosEditados.direccion,
           "identificacion": datosEditados.identificacion,
+          "sede": datosEditados.sede,
         }
         break;
       case 'admin':
@@ -234,6 +256,11 @@ const Settings = () => {
         endpoint = ''
     }
 
+    // Agregar contraseña solo si se ingresó
+    if (nuevaClave && nuevaClave.trim()) {
+      updateData.clave = nuevaClave.trim();
+    }
+
     // Crear FormData
     const formData = new FormData();
     Object.entries(updateData).forEach(([key, value]) => {
@@ -241,11 +268,15 @@ const Settings = () => {
     });
 
     if (foto) {
-      formData.append("foto", foto); // este nombre debe coincidir con @FileInterceptor('foto')
+      formData.append("foto", foto);
     }
 
     // Se envía la petición para guardar los datos
     updateProfile(endpoint, formData);
+    
+    // Limpiar campos de contraseña después de guardar
+    setNuevaClave('');
+    setConfirmarClave('');
   };
 
   const handleChange = (campo: string, valor: string) => {
@@ -516,6 +547,120 @@ const Settings = () => {
                       />
                     </Box>
                   ))}
+
+                {/* Campos de cambio de contraseña */}
+                <Box
+                  sx={{
+                    gridColumn: 'span 12',
+                    mt: 2,
+                  }}
+                >
+                  <Divider sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Cambiar Contraseña (Opcional)
+                    </Typography>
+                  </Divider>
+                </Box>
+
+                <Box
+                  sx={{
+                    gridColumn: {
+                      xs: 'span 12',
+                      sm: 'span 6',
+                    },
+                    borderRadius: 2, 
+                    border: '1px solid', 
+                    borderColor: errorClave && nuevaClave ? 'error.main' : 'primary.light', 
+                    py: 1, 
+                    px: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1,
+                  }}
+                >
+                  <Typography variant="body1" sx={{ minWidth: 150 }}>
+                    Nueva Contraseña:
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    type="password"
+                    value={nuevaClave}
+                    onChange={(e) => {
+                      setNuevaClave(e.target.value);
+                      setErrorClave('');
+                    }}
+                    disabled={loadingFetchUpdate}
+                    variant="standard"
+                    size="small"
+                    placeholder="Dejar en blanco para mantener la actual"
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 1,
+                      },
+                      '& .MuiInput-underline:before': {
+                        borderBottom: 'none',
+                      },
+                      '& .MuiInput-underline:after': {
+                        borderBottom: 'none',
+                      }, 
+                      '& .MuiInput-underline:hover:before': {
+                        borderBottom: 'none',
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    gridColumn: {
+                      xs: 'span 12',
+                      sm: 'span 6',
+                    },
+                    borderRadius: 2, 
+                    border: '1px solid', 
+                    borderColor: errorClave && confirmarClave ? 'error.main' : 'primary.light', 
+                    py: 1, 
+                    px: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1,
+                  }}
+                >
+                  <Typography variant="body1" sx={{ minWidth: 150 }}>
+                    Confirmar Contraseña:
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    type="password"
+                    value={confirmarClave}
+                    onChange={(e) => {
+                      setConfirmarClave(e.target.value);
+                      setErrorClave('');
+                    }}
+                    disabled={loadingFetchUpdate}
+                    variant="standard"
+                    size="small"
+                    placeholder="Confirmar nueva contraseña"
+                    error={!!errorClave && !!confirmarClave}
+                    helperText={errorClave && confirmarClave ? errorClave : ''}
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        backgroundColor: 'background.paper',
+                        borderRadius: 1,
+                      },
+                      '& .MuiInput-underline:before': {
+                        borderBottom: 'none',
+                      },
+                      '& .MuiInput-underline:after': {
+                        borderBottom: 'none',
+                      }, 
+                      '& .MuiInput-underline:hover:before': {
+                        borderBottom: 'none',
+                      },
+                    }}
+                  />
+                </Box>
               </Box>
             ) : (
               <Box>

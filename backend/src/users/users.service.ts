@@ -96,7 +96,12 @@ export class UsersService {
     if (data.identificacion) updateData.identificacion = data.identificacion;
     if (data.email) updateData.email_ = data.email;
     if (data.avatar_url) updateData.avatar_url = data.avatar_url;
-
+    
+    // Actualizar contraseña si se proporciona
+    if (data.clave) {
+        const hashedPassword = await bcrypt.hash(data.clave, 10);
+        updateData.clave = hashedPassword;
+    }
 
     return tx.usuarios.update({
         where: { id_usuario: id },

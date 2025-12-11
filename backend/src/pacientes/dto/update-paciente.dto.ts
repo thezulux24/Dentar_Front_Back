@@ -88,4 +88,10 @@ export class UpdatePacienteDto {
   @IsOptional()
   @IsString()
   avatar_url?: string;
+
+  @ApiPropertyOptional({ description: 'Nueva contraseña del paciente' })
+  @IsOptional()
+  @IsString({ message: 'La contraseña debe ser una cadena de texto' })
+  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
+  clave?: string;
 }

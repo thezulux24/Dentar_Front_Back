@@ -5,12 +5,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { buildResponse } from 'src/common/utils/response.util';
 import { DateHelper } from 'src/common/utils/date.helper';
 import { UsersService } from 'src/users/users.service';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class AuxiliaresService {
   constructor(
     private prisma: PrismaService,
     private usersService: UsersService,
+    private filesService: FilesService,
   ) {}
 
   async create(data: CreateAuxiliareDto) {
@@ -75,6 +77,7 @@ export class AuxiliaresService {
       where: { id_usuario: id },
       select: {
         id_parametro_tipo_auxiliar: true,
+        sede: true,
         usuarios: {
           select: {
             email_: true,
@@ -104,19 +107,36 @@ export class AuxiliaresService {
     });
   }
 
-  async update(id: string, updateAuxiliareDto: UpdateAuxiliareDto) {
+  async update(
+    id: string,
+    updateAuxiliareDto: UpdateAuxiliareDto,
+    foto?: Express.Multer.File,
+  ) {
     const [usuarioActualizado] = await this.prisma.$transaction(async (tx) => {
+      if (foto) {
+        const avatarUrl = await this.filesService.uploadFile(
+          foto,
+          `imagenes/auxiliares/${id}`,
+          `avatar_${id}`,
+        );
+        updateAuxiliareDto.avatar_url = avatarUrl;
+      }
+
       const usuario = await this.usersService.updateUser(
         id,
         updateAuxiliareDto,
         tx,
       );
 
+      const updateData: any = {
+        fecha_actualizacion: usuario.fecha_actualizacion,
+      };
+
+      if (updateAuxiliareDto.sede !== undefined) updateData.sede = updateAuxiliareDto.sede;
+
       const auxiliar = await tx.auxiliares.update({
         where: { id_usuario: id },
-        data: {
-          fecha_actualizacion: usuario.fecha_actualizacion,
-        },
+        data: updateData,
       });
 
       return [usuario, auxiliar];

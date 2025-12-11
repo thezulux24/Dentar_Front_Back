@@ -28,6 +28,7 @@ model auxiliares {
   eliminado                  Int?        @default(-1)
   fecha_eliminacion          DateTime?   @db.Timestamptz(6)
   id_parametro_tipo_auxiliar String?     @db.Uuid
+  sede                       String?     @db.VarChar(255)
   parametros                 parametros? @relation(fields: [id_parametro_tipo_auxiliar], references: [id_parametro], onDelete: NoAction, onUpdate: NoAction)
   usuarios                   usuarios    @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
   citas                      citas[]

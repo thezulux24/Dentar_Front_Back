@@ -8,7 +8,13 @@ import {
   Delete,
   UseGuards,
   Request,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuxiliaresService } from './auxiliares.service';
 import { CreateAuxiliareDto } from './dto/create-auxiliare.dto';
 import { UpdateAuxiliareDto } from './dto/update-auxiliare.dto';
@@ -61,8 +67,26 @@ export class AuxiliaresController {
   @ApiOperation({
     summary: 'Actualizar la información del auxiliar autenticado',
   })
-  async update(@Request() req, @Body() updateAuxiliareDto: UpdateAuxiliareDto) {
-    return this.auxiliaresService.update(req.user.id, updateAuxiliareDto);
+  @UseInterceptors(FileInterceptor('foto'))
+  async update(
+    @Request() req,
+    @Body() updateAuxiliareDto: UpdateAuxiliareDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ 
+            maxSize: 3 * 1024 * 1024,
+            message: 'El archivo excede el tamaño máximo permitido de 3MB',
+          }),
+          new FileTypeValidator({ 
+            fileType: 'image/jpeg|image/png',
+          }),
+        ],
+        fileIsRequired: false,
+      }),
+    ) foto: Express.Multer.File,
+  ) {
+    return this.auxiliaresService.update(req.user.id, updateAuxiliareDto, foto);
   }
 
   @Roles(Role.Admin)

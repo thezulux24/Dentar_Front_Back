@@ -41,4 +41,13 @@ export class UpdateAdministradoresDto {
     @MaxLength(1000)
     @IsOptional()
     fecha_de_nacimiento: string;
+
+    @IsString()
+    @IsOptional()
+    avatar_url?: string;
+
+    @IsString()
+    @IsOptional()
+    @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
+    clave?: string;
 }

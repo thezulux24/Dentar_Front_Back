@@ -5,10 +5,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { buildResponse } from 'src/common/utils/response.util';
 import { DateHelper } from 'src/common/utils/date.helper';
+import { UsersService } from 'src/users/users.service';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class AdministradoresService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private usersService: UsersService,
+    private filesService: FilesService,
+  ) {}
   
   async create(data: CreateAdministradoresDto) {
     const email = data.email.toLowerCase().replace(/\s/g, '');
@@ -114,81 +120,40 @@ export class AdministradoresService {
     return buildResponse(true, 'Perfil de administrador obtenido exitosamente', result);
   }
   
-  async update(id: string, updateAdministradoresDto: UpdateAdministradoresDto) {
-
-    // console.log('Actualizando paciente> ', id, updatePacienteDto);
-
-    // 1. Verificar existencia del paciente/usuario
-    const usuarioExistente = await this.prisma.usuarios.findUnique({
-      where: { id_usuario: id },
-      select: { id_usuario: true, email_: true }
-      // include: { pacientes: true }  // Incluir relación con paciente
-    });
-
-    if (!usuarioExistente) {
-      throw new NotFoundException('Administrador no encontrado');
-    }
-
-    // 2. Verificar email si se está actualizando
-    if (updateAdministradoresDto.email && updateAdministradoresDto.email !== usuarioExistente.email_) {
-      const emailExistente = await this.prisma.usuarios.findUnique({
-        where: { email_: updateAdministradoresDto.email },
-        select: { id_usuario: true, email_: true }
-      });
-      
-      if (emailExistente) {
-        throw new ConflictException('El correo ya está registrado');
+  async update(
+    id: string,
+    updateAdministradoresDto: UpdateAdministradoresDto,
+    foto?: Express.Multer.File,
+  ) {
+    const [usuarioActualizado] = await this.prisma.$transaction(async (tx) => {
+      if (foto) {
+        const avatarUrl = await this.filesService.uploadFile(
+          foto,
+          `imagenes/administradores/${id}`,
+          `avatar_${id}`,
+        );
+        updateAdministradoresDto.avatar_url = avatarUrl;
       }
-    }
 
-    // 3. Encriptar clave si se proporciona
-    // let hashedPassword = usuarioExistente.clave;
-    // if (updateAdministradoresDto.clave) {
-    //   hashedPassword = await bcrypt.hash(updateAdministradoresDto.clave, 10);
-    // }
+      const usuario = await this.usersService.updateUser(
+        id,
+        updateAdministradoresDto,
+        tx,
+      );
 
-    // Desestructurar campos del DTO para evitar repetición
-    const { 
-      nombres, 
-      apellidos,  
-      telefono, 
-      direccion,
-      email 
-    } = updateAdministradoresDto;
-    
-    const fechaActualizacion = DateHelper.nowUTC();
-
-    const data: any = {
-      fecha_actualizacion: fechaActualizacion,
-    };
-
-    if (nombres !== undefined) data.nombres = nombres;
-    if (apellidos !== undefined) data.apellidos = apellidos;
-    if (telefono !== undefined) data.telefono = telefono.toString();
-    if (direccion !== undefined) data.direccion = direccion;
-    if (email !== undefined) data.email_ = email;
-
-    // 4. Actualizar usuario y administrador en transacción
-    const [usuarioActualizado] = await this.prisma.$transaction([
-      this.prisma.usuarios.update({
-        where: { id_usuario: id },
-        data
-      }),
-      
-      // Actualizar datos específicos de administrador si existen en el DTO
-      this.prisma.administradores.update({
+      const administrador = await tx.administradores.update({
         where: { id_usuario: id },
         data: {
-          // Agregar aquí campos específicos de administradores si existen
-          fecha_actualizacion: fechaActualizacion,
-        }
-      })
-    ]);
+          fecha_actualizacion: usuario.fecha_actualizacion,
+        },
+      });
 
-    return { 
-      correo: usuarioActualizado.email_, 
-      message: 'Actualización exitosa' 
-    };
+      return [usuario, administrador];
+    });
+
+    return buildResponse(true, 'Actualización exitosa', {
+      correo: usuarioActualizado.email_,
+    });
   }
 
   remove(id: number) {

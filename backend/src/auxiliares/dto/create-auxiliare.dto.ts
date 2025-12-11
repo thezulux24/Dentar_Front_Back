@@ -67,4 +67,11 @@ export class CreateAuxiliareDto {
   @MinLength(2, { message: 'La identificación debe tener al menos 2 caracteres' })
   @MaxLength(20, { message: 'La identificación no debe superar los 20 caracteres' })
   identificacion?: string;
+
+  @ApiPropertyOptional({ description: 'Sede donde trabaja el auxiliar' })
+  @IsOptional()
+  @IsString({ message: 'La sede debe ser una cadena de texto' })
+  @MinLength(2, { message: 'La sede debe tener al menos 2 caracteres' })
+  @MaxLength(100, { message: 'La sede no debe superar los 100 caracteres' })
+  sede?: string;
 }

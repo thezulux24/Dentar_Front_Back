@@ -94,4 +94,10 @@ export class UpdateOdontologoDto {
   @MinLength(2, { message: 'La sede debe tener al menos 2 caracteres' })
   @MaxLength(100, { message: 'La sede no debe superar los 100 caracteres' })
   sede?: string;
+
+  @ApiPropertyOptional({ description: 'Nueva contraseña del odontólogo' })
+  @IsOptional()
+  @IsString({ message: 'La contraseña debe ser una cadena de texto' })
+  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
+  clave?: string;
 }

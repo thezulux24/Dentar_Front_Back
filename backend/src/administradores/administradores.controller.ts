@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AdministradoresService } from './administradores.service';
 import { CreateAdministradoresDto } from './dto/create-administradores.dto';
 import { UpdateAdministradoresDto } from './dto/update-administradores.dto';
@@ -35,8 +36,26 @@ export class AdministradoresController {
   @ApiOperation({
     summary: 'Actualizar la información del administrador autenticado',
   })
-  async update(@Request() req, @Body() updateAdministradoresDto: UpdateAdministradoresDto) {
-    return this.administradoresService.update(req.user.id, updateAdministradoresDto);
+  @UseInterceptors(FileInterceptor('foto'))
+  async update(
+    @Request() req,
+    @Body() updateAdministradoresDto: UpdateAdministradoresDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ 
+            maxSize: 3 * 1024 * 1024,
+            message: 'El archivo excede el tamaño máximo permitido de 3MB',
+          }),
+          new FileTypeValidator({ 
+            fileType: 'image/jpeg|image/png',
+          }),
+        ],
+        fileIsRequired: false,
+      }),
+    ) foto: Express.Multer.File,
+  ) {
+    return this.administradoresService.update(req.user.id, updateAdministradoresDto, foto);
   }
 
   @Roles(Role.Admin)

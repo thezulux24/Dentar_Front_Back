@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, TextField, InputAdornment,
-  Grid, Card, CardContent, Avatar, Button, Pagination, CircularProgress, Alert
+  Grid, Card, CardContent, Avatar, Button, Pagination, CircularProgress, Alert,
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import useFetch, { FetchResponse } from '../../hooks/useFetch';
@@ -36,9 +38,20 @@ const Diagnostics: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(18); // Default items per page
+  const [itemsPerPage, setItemsPerPage] = useState(18);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    clave: '',
+    nombres: '',
+    apellidos: '',
+    identificacion: '',
+    telefono: '',
+    direccion: '',
+    fecha_de_nacimiento: '',
+  });
 
   const { fetchData } = useFetch<FetchResponse<PacientesResponse>>();
   const { token } = useAuthStore();
@@ -78,12 +91,109 @@ const Diagnostics: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    setCurrentPage(1); // Reset to first page on new search
+    setCurrentPage(1);
   };
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenDialog = () => {
+    setFormData({
+      email: '',
+      clave: '',
+      nombres: '',
+      apellidos: '',
+      identificacion: '',
+      telefono: '',
+      direccion: '',
+      fecha_de_nacimiento: '',
+    });
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setFormData({
+      email: '',
+      clave: '',
+      nombres: '',
+      apellidos: '',
+      identificacion: '',
+      telefono: '',
+      direccion: '',
+      fecha_de_nacimiento: '',
+    });
+    setError(null);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (!formData.email) {
+        setError('Por favor complete el campo de Email');
+        return;
+      }
+
+      if (!formData.clave) {
+        setError('Por favor complete el campo de Contraseña');
+        return;
+      }
+
+      const requestBody: any = {
+        email: formData.email.trim(),
+        clave: formData.clave.trim(),
+      };
+
+      if (formData.nombres && formData.nombres.trim()) {
+        requestBody.nombres = formData.nombres.trim();
+      }
+      if (formData.apellidos && formData.apellidos.trim()) {
+        requestBody.apellidos = formData.apellidos.trim();
+      }
+      if (formData.identificacion && formData.identificacion.trim()) {
+        requestBody.identificacion = formData.identificacion.trim();
+      }
+      if (formData.telefono && formData.telefono.trim()) {
+        requestBody.telefono = formData.telefono.trim();
+      }
+      if (formData.direccion && formData.direccion.trim()) {
+        requestBody.direccion = formData.direccion.trim();
+      }
+      if (formData.fecha_de_nacimiento && formData.fecha_de_nacimiento.trim()) {
+        requestBody.fecha_de_nacimiento = formData.fecha_de_nacimiento.trim();
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/pacientes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        console.error('Error response:', responseData);
+        let errorMessage = 'Error al crear paciente';
+        if (responseData.message) {
+          if (Array.isArray(responseData.message)) {
+            errorMessage = responseData.message.join(', ');
+          } else {
+            errorMessage = responseData.message;
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
+      handleCloseDialog();
+      fetchPatients(search, currentPage, itemsPerPage);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    }
   };
 
   return (
@@ -116,17 +226,25 @@ const Diagnostics: React.FC = () => {
                 </InputAdornment>
               ),
             }
-
           }}
         />
 
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={()=>navigate('/doctor/diagnosticos/nuevo')}
-        >
-          Nuevo diagnóstico
-        </Button>
+        <Box display="flex" gap={2} flexWrap="wrap">
+          <Button
+            variant="outlined"
+            startIcon={<PersonAddIcon />}
+            onClick={handleOpenDialog}
+          >
+            Crear Paciente
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={()=>navigate('/doctor/diagnosticos/nuevo')}
+          >
+            Nuevo diagnóstico
+          </Button>
+        </Box>
       </Box>
 
       {loading && (
@@ -241,6 +359,80 @@ const Diagnostics: React.FC = () => {
           />
         </Box>
       )}
+
+      {/* Create Patient Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Crear Nuevo Paciente</DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <TextField
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Contraseña"
+              type="password"
+              value={formData.clave}
+              onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Nombres"
+              value={formData.nombres}
+              onChange={(e) => setFormData({ ...formData, nombres: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Apellidos"
+              value={formData.apellidos}
+              onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Identificación"
+              value={formData.identificacion}
+              onChange={(e) => setFormData({ ...formData, identificacion: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Teléfono"
+              value={formData.telefono}
+              onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Dirección"
+              value={formData.direccion}
+              onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Fecha de Nacimiento"
+              type="date"
+              value={formData.fecha_de_nacimiento}
+              onChange={(e) => setFormData({ ...formData, fecha_de_nacimiento: e.target.value })}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancelar</Button>
+          <Button onClick={handleSubmit} variant="contained">
+            Crear
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
